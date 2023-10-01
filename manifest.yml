@@ -1,0 +1,44 @@
+modules:
+  jiraServiceManagement:queuePage:
+    - key: spothelp-hello-world-queue-page
+      resource: frontend
+      title: spothelp
+      resolver:
+        function: resolver
+  trigger:
+    - key: event-trigger
+      function: trigger
+      events:
+        - avi:jira:created:issue
+  function:
+    - key: trigger
+      handler: index.run
+    - key: resolver
+      handler: index.handler
+resources:
+  - key: frontend
+    tunnel:
+      port: 3000
+    path: static/queue-page/build
+app:
+  id: ari:cloud:ecosystem::app/c049be28-55ec-411a-972e-d969d2c16022
+
+permissions:
+  scopes:
+    - 'write:jira-work'
+    - 'read:jira-work'
+    - 'storage:app'
+    - 'report:personal-data'
+    - 'read:sprint:jira-software'
+    - 'read:issue:jira-software'
+    - 'read:jql:jira'
+    - 'read:issue-details:jira'
+    - 'read:jira-user'
+  content:
+    styles:
+      - 'unsafe-inline'
+    scripts:
+      - unsafe-inline
+  external:
+    images:
+      - 'https://*.atlassian.net'
