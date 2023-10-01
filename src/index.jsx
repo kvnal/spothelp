@@ -8,6 +8,11 @@ import Resolver from '@forge/resolver';
 import { storage } from '@forge/api';
 const resolver = new Resolver();
 
+// /rest/agile/1.0/board
+// /wiki/rest/api/content/
+// /wiki/rest/api/content/1048851
+// /wiki/rest/api/content/1048851?expand=body.dynamic
+
 
 resolver.define('test', async (req) => {
     const data = req.context;

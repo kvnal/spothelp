@@ -1,0 +1,53 @@
+{
+    "maxResults": 50,
+    "startAt": 0,
+    "total": 3,
+    "isLast": true,
+    "values": [
+      {
+        "id": 1,
+        "self": "https://nuvs.atlassian.net/rest/agile/1.0/board/1",
+        "name": "JSC board",
+        "type": "scrum",
+        "location": {
+          "projectId": 10001,
+          "displayName": "jira-scrum-company (JSC)",
+          "projectName": "jira-scrum-company",
+          "projectKey": "JSC",
+          "projectTypeKey": "software",
+          "avatarURI": "https://nuvs.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10422?size=small",
+          "name": "jira-scrum-company (JSC)"
+        }
+      },
+      {
+        "id": 2,
+        "self": "https://nuvs.atlassian.net/rest/agile/1.0/board/2",
+        "name": "jsc-board2",
+        "type": "scrum",
+        "location": {
+          "projectId": 10001,
+          "displayName": "jira-scrum-company (JSC)",
+          "projectName": "jira-scrum-company",
+          "projectKey": "JSC",
+          "projectTypeKey": "software",
+          "avatarURI": "https://nuvs.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10422?size=small",
+          "name": "jira-scrum-company (JSC)"
+        }
+      },
+      {
+        "id": 3,
+        "self": "https://nuvs.atlassian.net/rest/agile/1.0/board/3",
+        "name": "JIR board",
+        "type": "kanban",
+        "location": {
+          "projectId": 10002,
+          "displayName": "jira-project2 (JIR)",
+          "projectName": "jira-project2",
+          "projectKey": "JIR",
+          "projectTypeKey": "software",
+          "avatarURI": "https://nuvs.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10400?size=small",
+          "name": "jira-project2 (JIR)"
+        }
+      }
+    ]
+  }

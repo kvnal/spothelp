@@ -1,0 +1,80 @@
+{
+    "which_data":"setting-config",
+    "auto_ticket_locator":{
+        "auto_translate_english":true,
+        "jira_boards":[
+            {
+                "team_name":"team a",
+                "jira":{
+                    "id": 1,
+                    "self": "https://nuvs.atlassian.net/rest/agile/1.0/board/1",
+                    "name": "JSC board",
+                    "type": "scrum",
+                    "location": {
+                      "projectId": 10001,
+                      "displayName": "jira-scrum-company (JSC)",
+                      "projectName": "jira-scrum-company",
+                      "projectKey": "JSC",
+                      "projectTypeKey": "software",
+                      "avatarURI": "https://nuvs.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10422?size=small",
+                      "name": "jira-scrum-company (JSC)"
+                    }
+                  },
+                "confluence": {
+                    "id": "33363",
+                    "type": "page",
+                    "status": "current",
+                    "title": "Getting started in Confluence",
+                    "macroRenderedOutput": {},
+                    "extensions": {
+                      "position": 604
+                    },
+                    "_expandable": {
+                      "container": "/rest/api/space/~701211848c046b89f4f8fa22f846875694d2a",
+                      "metadata": "",
+                      "restrictions": "/rest/api/content/33363/restriction/byOperation",
+                      "history": "/rest/api/content/33363/history",
+                      "body": "",
+                      "version": "",
+                      "descendants": "/rest/api/content/33363/descendant",
+                      "space": "/rest/api/space/~701211848c046b89f4f8fa22f846875694d2a",
+                      "childTypes": "",
+                      "schedulePublishInfo": "",
+                      "operations": "",
+                      "schedulePublishDate": "",
+                      "children": "/rest/api/content/33363/child",
+                      "ancestors": ""
+                    },
+                    "_links": {
+                      "self": "https://nuvs.atlassian.net/wiki/rest/api/content/33363",
+                      "tinyui": "/x/U4I",
+                      "editui": "/pages/resumedraft.action?draftId=33363",
+                      "webui": "/spaces/~701211848c046b89f4f8fa22f846875694d2a/pages/33363/Getting+started+in+Confluence"
+                    }
+                  }
+            }
+        ]
+    },
+
+    "holidays":{
+         "occasional":[
+            {
+                "holiday_name":"christmas",
+                "date": "25/12/23"
+            }
+         ],
+         "weekly":{
+            "mon":true,
+            "tue":false,
+            "wed":false,
+            "fri":false,
+            "sat":false,
+            "sun":false
+         }
+    },
+
+    "ai_greetings_message":{
+        "ai_greetings_on_issue_create":true,
+        "greet_in_local_language":true
+    }
+}
