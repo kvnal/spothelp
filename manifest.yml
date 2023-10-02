@@ -1,8 +1,4 @@
 modules:
-  confluence:contentAction:
-    - key: forge-create-hello-world
-      function: main-conf
-      title: forge create
   jiraServiceManagement:queuePage:
     - key: spothelp-hello-world-queue-page
       resource: frontend
