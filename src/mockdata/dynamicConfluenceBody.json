@@ -1,0 +1,61 @@
+{
+    "type": "doc",
+    "content": [
+        {
+            "type": "paragraph",
+            "content": [
+                {
+                    "text": "test data",
+                    "type": "text"
+                }
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": [
+                {
+                    "text": "bold data",
+                    "type": "text",
+                    "marks": [
+                        {
+                            "type": "strong"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "heading",
+            "attrs": {
+                "level": 1
+            },
+            "content": [
+                {
+                    "text": "heading data",
+                    "type": "text"
+                }
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": [
+                {
+                    "text": "colored data",
+                    "type": "text",
+                    "marks": [
+                        {
+                            "type": "textColor",
+                            "attrs": {
+                                "color": "#ff5630"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "paragraph"
+        }
+    ],
+    "version": 1
+}
