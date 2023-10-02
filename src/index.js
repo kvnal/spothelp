@@ -1,5 +1,6 @@
 import Resolver from "@forge/resolver";
-import { api, storage } from "@forge/api";
+import { storage } from "@forge/api";
+import api, { route } from "@forge/api";
 
 import mock_getSettingConfig from "./mockdata/setting_config.json" 
 // import mock_getConfluenceWikis from "./mockdata/dynamicConfluenceBody.json" 
@@ -53,14 +54,18 @@ resolver.define("setStorage", async (req) => {
 
 
 resolver.define("getJiraBoards", async (req) => {
-  let response = await api.asApp().requestJira(route`/rest/agile/1.0/board`);
+  let response = (  await api.asApp().requestJira(route`/rest/agile/1.0/board`)).json();
 
   return response;
 });
 
 resolver.define("getConfluenceWikis", async (req) => {
-  let response = await api.asApp().requestJira(route`/wiki/rest/api/content/`);
-  return response;
+  // let response = (await api.asApp().requestConfluence(route`/wiki/rest/api/content/`)).json();
+  let response =  await api.asUser().requestConfluence(route`/wiki/rest/api/content`)
+
+
+  return await response.json()
+  return {msg:"response"};
 });
 
 resolver.define("setSettingConfig", async (req) => {

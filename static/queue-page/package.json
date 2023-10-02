@@ -27,7 +27,8 @@
     "eject": "react-scripts eject",
     "build:linux": "rm -rf ./build && react-scripts build",
     "build:win": "rmdir /s build && react-scripts build",
-    "deploy:win": "rmdir /s build && react-scripts build && cd ../../ && forge deploy"
+    "bd": "rmdir /s build && react-scripts build && cd ../../ && forge deploy"
+    
   },
   "eslintConfig": {
     "extends": [

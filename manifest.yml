@@ -1,4 +1,8 @@
 modules:
+  confluence:contentAction:
+    - key: forge-create-hello-world
+      function: main-conf
+      title: forge create
   jiraServiceManagement:queuePage:
     - key: spothelp-hello-world-queue-page
       resource: frontend
@@ -15,6 +19,8 @@ modules:
       handler: index.run
     - key: resolver
       handler: index.handler
+    - key: main-conf
+      handler: app.run
 resources:
   - key: frontend
     tunnel:
@@ -34,6 +40,7 @@ permissions:
     - 'read:jql:jira'
     - 'read:issue-details:jira'
     - 'read:jira-user'
+    - 'read:confluence-content.summary'
   content:
     styles:
       - 'unsafe-inline'

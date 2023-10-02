@@ -27,6 +27,12 @@ const Devtools = () => {
         });
     };
 
+    const invokeResolver = () =>{
+        invoke(inputvalue, {key: null}).then((result)=>{
+            setdata(result);
+        })
+    }
+
     return (
         <>
             <button onClick={() => setshow(!show)}>Toggle Dev Tools</button>
@@ -51,8 +57,9 @@ const Devtools = () => {
                                 onChange={(e) => setInputvalue(e.target.value)}
                             />
                             {/* <input type="text" placeholder="getStorage" /> */}
-                            <button onClick={getStorage}>get</button>
+                            <button onClick={getStorage}>get storage</button>
                             <button onClick={setStorage}>setStorage</button>
+                            <button onClick={invokeResolver}>invoke resolver</button>
                         </div>
                     </div>
                 </div>
