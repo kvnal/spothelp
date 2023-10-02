@@ -2,11 +2,11 @@
     "which_data":"setting-config",
     "auto_ticket_locator":{
         "auto_translate_english":true,
-        "jira_boards":"get from api 'getJiraBoards'"
+        "jira_boards":"get from api 'getAiIssueLocator'"
     },
 
     "holidays":{
-         "occasional":"get from api 'getConfluenceWikis'",
+         "occasional":"get from api 'getHolidays'",
          "weekly":{
             "mon":true,
             "tue":false,
@@ -22,3 +22,4 @@
         "greet_in_local_language":true
     }
 }
+

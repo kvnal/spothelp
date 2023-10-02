@@ -2,8 +2,35 @@ import Resolver from "@forge/resolver";
 import { storage } from "@forge/api";
 import api, { route } from "@forge/api";
 
-import mock_getSettingConfig from "./mockdata/setting_config.json" 
-// import mock_getConfluenceWikis from "./mockdata/dynamicConfluenceBody.json" 
+
+const STORAGE_SETTINGS_KEY = "settings";
+const STORAGE_HOLIDAYS_KEY = "holidays";
+const STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY = "jiraboards";
+
+const DEFAULT_SETTING_CONFIG = {
+  which_data:"setting-config",
+  auto_ticket_locator:{
+      auto_translate_english: true,
+      jira_boards:"get from api 'getJiraBoards'"
+  },
+  holidays:{
+       occasional:"get from api 'getConfluenceWikis'",
+       weekly:{
+          mon:true,
+          tue:false,
+          wed:false,
+          fri:false,
+          sat:false,
+          sun:false
+       }
+  },
+  ai_greetings_message:{
+      ai_greetings_on_issue_create:true,
+      greet_in_local_language:true
+  }
+}
+
+
 
 // event trigger
 export async function run(event, context) {
@@ -24,6 +51,7 @@ export async function run(event, context) {
 // /wiki/rest/api/content/
 // /wiki/rest/api/content/1048851
 // /wiki/rest/api/content/1048851?expand=body.dynamic
+//POST comment /rest/servicedeskapi/request/CS-1/comment
 
 const resolver = new Resolver();
 
@@ -68,33 +96,50 @@ resolver.define("getConfluenceWikis", async (req) => {
   return {msg:"response"};
 });
 
-resolver.define("setSettingConfig", async (req) => {
+resolver.define("setSettings", async (req) => {
   // set and check for confluence page change along with
 });
 
-resolver.define("getSettingConfig", async (req) => {
-    // const storageSetting = await storage.get("settingConfig");
-    // if undefined then set default.
-    return mock_getSettingConfig;
-    return storageSetting;
+resolver.define("getSettings", async (req) => {
+    const storageData = await storage.get(STORAGE_SETTINGS_KEY);
+    
+    if(storageData == "undefined"){
+      await storage.set(STORAGE_SETTINGS_KEY, DEFAULT_SETTING_CONFIG);
+
+      return DEFAULT_SETTING_CONFIG;
+    }
+    
+    return storageData;
 });
 
-resolver.define("setAutoTicketLocator", async(req)=>{
+resolver.define("setAiIssueLocator", async(req)=>{
     // set in diff storage key
 
     // save new prompt in diff key
 })
 
-resolver.define("getAutoTicketLocator", async(req)=>{
-    // get
+resolver.define("getAiIssueLocator", async(req)=>{
+  const storageData = await storage.get(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY);
+  if(storageData =="undefined"){
+    await storage.set(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY, []);
+    return [];
+  }
+  return storageData
 })
 
 resolver.define("setHolidays", async(req)=>{
     // set in diff storage key
+    const storageData  = await storage.get(STORAGE_HOLIDAYS_KEY);
+    storageData.push(req.payload.value)
 })
 
 resolver.define("getHolidays", async(req)=>{
-    // get return blank.
+  const storageData = await storage.get(STORAGE_HOLIDAYS_KEY);
+  if(storageData =="undefined"){
+    await storage.set(STORAGE_HOLIDAYS_KEY, []);
+    return [];
+  }
+  return storageData
 })
 
 
