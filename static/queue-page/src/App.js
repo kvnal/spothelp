@@ -13,7 +13,12 @@ function App() {
   };
   return (
     <div className="App">
-      <Devtools />
+      <Devtools /> 
+      {/* do not remove devtools */}
+      {/* do not remove devtools */}
+      {/* do not remove devtools */}
+      {/* do not remove devtools */}
+      {/* do not remove devtools */}
       <header className="App-header">
         <button onClick={test}>click to test</button>
         <img src={logo} className="App-logo" alt="logo" />

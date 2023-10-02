@@ -32,11 +32,25 @@ resolver.define("test", async (req) => {
   return "🔴 Hello from the backend.";
 });
 
-// dev test
+// dev tools
 resolver.define("getStorage", async (req) => {
-  // {key:"storage key"} return stored data
-  const data = req.payload;
+  const key = req.payload.key;
+  console.log(key);
+  const storageData = await storage.get(key)
+  if(typeof(storageData)=="object")
+    return storageData
+  return {data : storageData ? storage!="undefined" : `key ${key} not present`}
 });
+
+resolver.define("setStorage", async (req) => {
+  const key = req.payload.key;
+  const value = req.payload.value;
+  console.log(key,value);
+  const storageData = await storage.set(key,value);
+  return {msg : "key set done"}
+});
+// dev tools end
+
 
 resolver.define("getJiraBoards", async (req) => {
   let response = await api.asApp().requestJira(route`/rest/agile/1.0/board`);
