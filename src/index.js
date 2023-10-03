@@ -11,10 +11,10 @@ const DEFAULT_SETTING_CONFIG = {
   which_data:"setting-config",
   auto_ticket_locator:{
       auto_translate_english: true,
-      jira_boards:"get from api 'getJiraBoards'"
+      jira_boards:"get from api 'getAiIssueLocator'"
   },
   holidays:{
-       occasional:"get from api 'getConfluenceWikis'",
+       occasional:"get from api 'getHolidays'",
        weekly:{
           mon:false,
           tue:false,
@@ -54,7 +54,9 @@ const utils = new Utils();
 
 resolver.define("devInvoke", async (req) => {
   // let a = utils.getConfluenceBody(33364)
-  let a = await utils.createJiraIssue(utils.MOCK_EVENT_ISSUE, "10001","6326e30c14c6b4b221099d1f")
+  // let a = await utils.createJiraIssue(utils.MOCK_EVENT_ISSUE, "10001","6326e30c14c6b4b221099d1f")
+
+  let a = await utils.createJiraIssueLink("CS-1","JSC-6");
   // console.log(a);
 
   return a;

@@ -34,6 +34,24 @@ class Utils {
     return newlyCreatedJiraIssue;
   };
 
+  createJiraIssueLink = async (inwardIssueKey, outwardIssueKey) =>{
+    let bodyData = this.ISSUE_LINK_BODY;
+    bodyData['inwardIssue']['key']=inwardIssueKey
+    bodyData['outwardIssue']['key']=outwardIssueKey
+    console.log(JSON.stringify(bodyData));
+    const response = await api.asUser().requestJira(route`/rest/api/3/issueLink`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(bodyData)
+    });
+
+    console.log(await response.json())
+    return {msg:"linked"}
+  }
+
   getUsers = async () => {
     let response = await api.asApp().requestJira(
       route`/rest/api/3/users/search`
@@ -87,6 +105,18 @@ class Utils {
     },
     "update": {}
   };
+
+  ISSUE_LINK_BODY = {
+  "inwardIssue": {
+    "key": ""
+  },
+  "outwardIssue": {
+    "key": ""
+  },
+  "type": {
+    "name": "Cloners"
+  }
+}
 
   MOCK_EVENT_ISSUE = {
     "issue": {
