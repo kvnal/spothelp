@@ -35,6 +35,7 @@ const DEFAULT_SETTING_CONFIG = {
 // event trigger
 export async function run(event, context) {
   console.log("oncreate event triggered " + JSON.stringify(context));
+  // console.log("oncreate event triggered " + JSON.stringify(event));
 
   // check holiday occasional from storage
   // check holiday weekly from setting
@@ -52,8 +53,9 @@ const resolver = new Resolver();
 const utils = new Utils();
 
 resolver.define("devInvoke", async (req) => {
-  let a = utils.getConfluenceBody(33364)
-
+  // let a = utils.getConfluenceBody(33364)
+  let a = await utils.createJiraIssue(utils.MOCK_EVENT_ISSUE, "10001","6326e30c14c6b4b221099d1f")
+  // console.log(a);
 
   return a;
   return "🔴 Hello from the backend.";
@@ -149,6 +151,11 @@ resolver.define("getHolidays", async(req)=>{
     return [];
   }
   return storageData
+})
+
+resolver.define("getUsers", async(req)=>{
+  let users = await utils.getUsers();
+  return users;
 })
 
 
