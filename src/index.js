@@ -1,7 +1,7 @@
 import Resolver from "@forge/resolver";
 import { storage } from "@forge/api";
 import api, { route } from "@forge/api";
-
+import Utils from "./utils";
 
 const STORAGE_SETTINGS_KEY = "settings";
 const STORAGE_HOLIDAYS_KEY = "holidays";
@@ -16,7 +16,7 @@ const DEFAULT_SETTING_CONFIG = {
   holidays:{
        occasional:"get from api 'getConfluenceWikis'",
        weekly:{
-          mon:true,
+          mon:false,
           tue:false,
           wed:false,
           fri:false,
@@ -47,34 +47,39 @@ export async function run(event, context) {
 }
 // end
 
-// /rest/agile/1.0/board
-// /wiki/rest/api/content/
-// /wiki/rest/api/content/1048851
-// /wiki/rest/api/content/1048851?expand=body.dynamic
-//POST comment /rest/servicedeskapi/request/CS-1/comment
 
 const resolver = new Resolver();
+const utils = new Utils();
 
-resolver.define("test", async (req) => {
-  const data = req.context;
-  console.log("data from front end > " + JSON.stringify(req));
+resolver.define("devInvoke", async (req) => {
+  let a = utils.getConfluenceBody(33364)
+
+
+  return a;
   return "🔴 Hello from the backend.";
 });
 
 // dev tools
 resolver.define("getStorage", async (req) => {
   const key = req.payload.key;
-  console.log(key);
+  console.log(`getstorage ${key}`);
+  
+  // await storage.delete(key)
+  // return {msg : "deleted"};
+  
   const storageData = await storage.get(key)
+  
+  // console.log(storageData);
+
   if(typeof(storageData)=="object")
     return storageData
-  return {data : storageData ? storage!="undefined" : `key ${key} not present`}
+  return {data : storageData ? storage!=undefined : `key ${key} not present`}
 });
 
 resolver.define("setStorage", async (req) => {
   const key = req.payload.key;
   const value = req.payload.value;
-  console.log(key,value);
+  // console.log(key,value);
   const storageData = await storage.set(key,value);
   return {msg : "key set done"}
 });
@@ -101,9 +106,10 @@ resolver.define("setSettings", async (req) => {
 });
 
 resolver.define("getSettings", async (req) => {
+    console.log("getSettings");
     const storageData = await storage.get(STORAGE_SETTINGS_KEY);
     
-    if(storageData == "undefined"){
+    if(storageData == undefined){
       await storage.set(STORAGE_SETTINGS_KEY, DEFAULT_SETTING_CONFIG);
 
       return DEFAULT_SETTING_CONFIG;
@@ -114,13 +120,16 @@ resolver.define("getSettings", async (req) => {
 
 resolver.define("setAiIssueLocator", async(req)=>{
     // set in diff storage key
-
+    const storageData = await storage.get(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY);
+    await storageData.push(req.payload.value);
+    
+    // get confluence..
     // save new prompt in diff key
 })
 
 resolver.define("getAiIssueLocator", async(req)=>{
   const storageData = await storage.get(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY);
-  if(storageData =="undefined"){
+  if(storageData === undefined){
     await storage.set(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY, []);
     return [];
   }
@@ -135,7 +144,7 @@ resolver.define("setHolidays", async(req)=>{
 
 resolver.define("getHolidays", async(req)=>{
   const storageData = await storage.get(STORAGE_HOLIDAYS_KEY);
-  if(storageData =="undefined"){
+  if(storageData === undefined){
     await storage.set(STORAGE_HOLIDAYS_KEY, []);
     return [];
   }
