@@ -1,3 +1,4 @@
+import Resolver from '@forge/resolver';
 import axios from 'axios';
 import webSocket from "ws";
 
@@ -7,7 +8,7 @@ class HuggingFace {
         return Math.random().toString(36).substring(2);
     };
 
-    question = "how to go to mars with tin can?";
+    question = "what is 2 raise to power 5?";
     fn_index = [6, 7, 8, 9];
     session_hash = this.generateSession_hash();
 
@@ -28,14 +29,14 @@ class HuggingFace {
     predict_URI = "https://codellama-codellama-13b-chat.hf.space/run/predict";
     ws_URI = "wss://codellama-codellama-13b-chat.hf.space/queue/join";
 
-    ws = (json_data_wb_send_data,json_data_wb_send_hash) => {
+    ws = (json_data_wb_send_data, json_data_wb_send_hash) => {
 
-        let sendMessageWS = (ws, data, msg_type = "Nan") =>{
+        let sendMessageWS = (ws, data, msg_type = "Nan") => {
             let stringy = JSON.stringify(data);
             ws.send(stringy);
             console.log(`wb: sendMessage <${msg_type}> `, stringy);
             return 1;
-        }
+        };
 
         let ws = new webSocket(this.ws_URI);
 
@@ -46,7 +47,7 @@ class HuggingFace {
         ws.onclose = function () {
             console.log("ws: closed ");
         };
-        
+
 
         ws.onmessage = function (event) {
             // console.log("%s",event.data)
@@ -56,7 +57,7 @@ class HuggingFace {
             switch (event_data['msg']) {
                 case "send_hash":
                     sendMessageWS(ws, json_data_wb_send_hash, "send_hash");
-                    
+
                     break;
                 case "send_data":
                     sendMessageWS(ws, json_data_wb_send_data, "send_data");
@@ -72,7 +73,7 @@ class HuggingFace {
                         console.log(`Failed ${stringyData}`);
                     }
                     ws.close();
-                    break;
+                    return stringyData;
             }
         };
 
@@ -83,12 +84,86 @@ class HuggingFace {
             axios.post(this.predict_URI, this.json_data_predict_api_fn_index1).then(res => {
                 axios.post(this.predict_URI, this.json_data_predict_api_fn_index2).then(res => {
                     console.log("predict api completed!");
-                    this.ws(this.json_data_wb_send_data,this.json_data_wb_send_hash);
+                    let wsResult = this.ws(this.json_data_wb_send_data, this.json_data_wb_send_hash);
+                    return wsResult;
                 });
             });
         });
 
     };
+
+    wsPromise = (json_data_wb_send_data, json_data_wb_send_hash) => {
+
+        let sendMessageWS = (ws, data, msg_type = "Nan") => {
+            let stringy = JSON.stringify(data);
+            ws.send(stringy);
+            console.log(`wb: sendMessage <${msg_type}> `, stringy);
+            return 1;
+        };
+
+       return new Promise((resolve, reject) => {
+
+            let ws = new webSocket(this.ws_URI);
+
+            ws.onopen = function () {
+                console.log("ws: open");
+            };
+
+            ws.onclose = function () {
+                console.log("ws: closed ");
+            };
+
+
+            ws.onmessage = function (event) {
+                // console.log("%s",event.data)
+
+                let event_data = JSON.parse(event.data);
+
+                switch (event_data['msg']) {
+                    case "send_hash":
+                        sendMessageWS(ws, json_data_wb_send_hash, "send_hash");
+
+                        break;
+                    case "send_data":
+                        sendMessageWS(ws, json_data_wb_send_data, "send_data");
+                        break;
+                    case "estimation":
+                        console.log("wb: waiting period ", JSON.stringify(event_data));
+                        break;
+                    case "process_completed":
+                        let stringyData = JSON.stringify(event_data);
+                        if (event_data['success'] == true) {
+                            console.log(`Done ${stringyData}`);
+                        } else {
+                            console.log(`Failed ${stringyData}`);
+                        }
+                        ws.close();
+                        resolve(stringyData)
+                        // return stringyData;
+                }
+            };
+
+        });
+
+       
+    };
+
+    llamaPromise = new Promise((resolve, reject) => {
+        axios.post(this.predict_URI, this.json_data_predict_api_fn_index0).then(res => {
+            axios.post(this.predict_URI, this.json_data_predict_api_fn_index1).then(res => {
+                axios.post(this.predict_URI, this.json_data_predict_api_fn_index2).then(res => {
+                    console.log("predict api completed!");
+                    // let wsResult = this.ws(this.json_data_wb_send_data, this.json_data_wb_send_hash);
+                    this.wsPromise(this.json_data_wb_send_data,this.json_data_wb_send_hash).then
+                    (res=>{
+                        resolve(res);
+                    })
+                });
+            });
+        });
+
+    });
+
 }
 
 export default HuggingFace;
