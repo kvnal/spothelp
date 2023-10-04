@@ -39,10 +39,10 @@ export async function run(event, context) {
 
   // check holiday occasional from storage
   // check holiday weekly from setting
-  // check if issue bug (get issue details)
-  // get prompt or create storage call
-  // ai call promise bug detect + greeting
-  // post greeting comment..
+  // check if issue is bug (get issue details?)
+  // create greet comment + holiday if it is.  do promise parallel calls for language detection > ai comment + issue locator
+
+  // get prompt or get storage call for all confluence body tokenized
   // get jira board storage
   // assign ticket 
 }
@@ -57,7 +57,9 @@ resolver.define("devInvoke", async (req) => {
   // let a = await utils.createJiraIssue(utils.MOCK_EVENT_ISSUE, "10001","6326e30c14c6b4b221099d1f")
 
   // let a = await utils.createJiraIssueLink("CS-1","JSC-5");
-  let a = await utils.createIssueComment("JSC-7","comment from forge api...")
+  // let a = await utils.createIssueComment("CS-2","comment from forge api...")
+  let a = await utils.getConfluenceBody("1048851");
+
   // console.log(a);
 
   return a;
