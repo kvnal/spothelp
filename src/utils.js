@@ -38,7 +38,7 @@ class Utils {
     let bodyData = this.ISSUE_LINK_BODY;
     bodyData['inwardIssue']['key']=inwardIssueKey
     bodyData['outwardIssue']['key']=outwardIssueKey
-    console.log(JSON.stringify(bodyData));
+
     const response = await api.asUser().requestJira(route`/rest/api/3/issueLink`, {
       method: 'POST',
       headers: {
@@ -48,7 +48,6 @@ class Utils {
       body: JSON.stringify(bodyData)
     });
 
-    console.log(await response.json())
     return {msg:"linked"}
   }
 
