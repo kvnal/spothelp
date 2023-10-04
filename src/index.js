@@ -56,7 +56,8 @@ resolver.define("devInvoke", async (req) => {
   // let a = utils.getConfluenceBody(33364)
   // let a = await utils.createJiraIssue(utils.MOCK_EVENT_ISSUE, "10001","6326e30c14c6b4b221099d1f")
 
-  let a = await utils.createJiraIssueLink("CS-1","JSC-5");
+  // let a = await utils.createJiraIssueLink("CS-1","JSC-5");
+  let a = await utils.createIssueComment("JSC-7","comment from forge api...")
   // console.log(a);
 
   return a;

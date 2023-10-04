@@ -51,6 +51,23 @@ class Utils {
     return {msg:"linked"}
   }
 
+  createIssueComment = async (issueKey, commentText) =>{
+    let bodyData = this.ISSUE_COMMENT_BODY;
+    bodyData['body']['content'][0]['content'][0]['text']=commentText;
+
+    const response = await api.asUser().requestJira(route`/rest/api/3/issue/${issueKey}/comment`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(bodyData)
+    });
+
+    let responseJson = await response.json();
+    return responseJson;
+  }
+
   getUsers = async () => {
     let response = await api.asApp().requestJira(
       route`/rest/api/3/users/search`
@@ -116,6 +133,24 @@ class Utils {
     "name": "Cloners"
   }
 }
+
+  ISSUE_COMMENT_BODY ={
+    "body": {
+      "content": [
+        {
+          "content": [
+            {
+              "text": "<comment here..>",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "doc",
+      "version": 1
+    }
+  }
 
   MOCK_EVENT_ISSUE = {
     "issue": {
