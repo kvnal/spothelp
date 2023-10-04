@@ -4,14 +4,16 @@
   "main": "index.js",
   "license": "MIT",
   "private": true,
+  "type": "module",
   "scripts": {
     "lint": "./node_modules/.bin/eslint src/**/* || npm run --silent hook-errors",
     "hook-errors": "echo '\\x1b[31mThe build failed because a Forge UI hook is being used incorrectly. Forge UI hooks follow the same rules as React Hooks but have their own API definitions. See the Forge documentation for details on how to use Forge UI hooks.\n' && exit 1",
     "forge:install_jira": "forge install -p Jira -s nuvs.atlassian.net -e development",
     "forge:install_confluence": "forge install -p Confluence -s nuvs.atlassian.net -e development",
-    "forge:install":"npm run forge:install_jira && npm run forge:install_confluence",
+    "forge:install": "npm run forge:install_jira && npm run forge:install_confluence",
     "bd": "cd static/queue-page && rmdir /s build && npm run build && cd ../../ && forge deploy",
-    "dt": "forge deploy && forge tunnel"
+    "dt": "forge deploy && forge tunnel",
+    "nodemon": "nodemon src/llama.js"
   },
   "devDependencies": {
     "eslint": "^8.50.0",
@@ -20,6 +22,9 @@
   "dependencies": {
     "@forge/api": "^2.19.1",
     "@forge/resolver": "^1.5.17",
-    "@forge/ui": "^1.9.5"
+    "@forge/ui": "^1.9.5",
+    "axios": "^1.5.1",
+    "nodemon": "^3.0.1",
+    "ws": "^8.14.2"
   }
 }

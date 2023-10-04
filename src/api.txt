@@ -1,4 +1,13 @@
 /*
+
+
+// /rest/agile/1.0/board
+// /wiki/rest/api/content/
+// /wiki/rest/api/content/1048851
+// /wiki/rest/api/content/1048851?expand=body.dynamic
+//POST comment /rest/servicedeskapi/request/CS-1/comment
+
+
 POST JIRA 
 /rest/api/3/issue/CS-1/comment
 
