@@ -4,15 +4,21 @@
   "private": true,
   "homepage": ".",
   "dependencies": {
+    "@atlaskit/css-reset": "^6.5.4",
+    "@atlaskit/page-header": "^10.4.4",
+    "@atlaskit/table-tree": "^9.6.4",
+    "@atlaskit/toggle": "^12.6.11",
     "@forge/bridge": "^2.6.0",
     "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "@testing-library/react": "^12.1.5",
+    "bootstrap": "^5.3.2",
+    "react": "^16.14.0",
+    "react-dom": "^16.14.0",
+    "react-intl-next": "npm:react-intl@^5.25.1",
+    "react-json-view": "^1.21.3",
     "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4",
-    "react-json-view": "^1.21.3"
+    "styled-components": "^3.4.10",
+    "web-vitals": "^2.1.4"
   },
   "overrides": {
     "react-json-view": {
@@ -28,7 +34,6 @@
     "build:linux": "rm -rf ./build && react-scripts build",
     "build:win": "rmdir /s build && react-scripts build",
     "bd": "rmdir /s build && react-scripts build && cd ../../ && forge deploy"
-    
   },
   "eslintConfig": {
     "extends": [
