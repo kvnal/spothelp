@@ -1,0 +1,25 @@
+{
+    "which_data":"setting-config",
+    "auto_ticket_locator":{
+        "auto_translate_english":true,
+        "jira_boards":"get from api 'getAiIssueLocator'"
+    },
+
+    "holidays":{
+         "occasional":"get from api 'getHolidays'",
+         "weekly":{
+            "mon":true,
+            "tue":false,
+            "wed":false,
+            "fri":false,
+            "sat":false,
+            "sun":false
+         }
+    },
+
+    "ai_greetings_message":{
+        "ai_greetings_on_issue_create":true,
+        "greet_in_local_language":true
+    }
+}
+
