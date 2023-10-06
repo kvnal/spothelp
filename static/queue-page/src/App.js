@@ -3,10 +3,10 @@ import "./App.css";
 // import { invoke } from "@forge/bridge";
 import Devtools from "./dev/Devtools";
 import HolidaysSection from "./holidays-section/holidays";
-import Table from "./parts/table/table";
-import settingData from "./mock-data/setting_config.json";
 import { useEffect, useState } from "react";
-import { invoke } from '@forge/bridge';
+import { invoke } from "@forge/bridge";
+import GreetingsSection from "./greetings-setion/greetings";
+import IssueLocatorSection from "./issue-locator-section/issueLocatorSection";
 
 function App() {
   // Invoke API like this
@@ -17,46 +17,61 @@ function App() {
 
   const [isLoading, setLoading] = useState(true);
   useEffect(() => {
-      invoke('getSettings').then((data) => setSettingsData(data));
-      setLoading(false)
+    invoke("getSettings").then((data) => {
+      setSettingsData(data);
+      setLoading(false);
+    });
   }, []);
   console.log(settingsData);
-  const columns = [
-    {
-      title: "Card Title",
-      accessorKey: "title",
-      width: 200,
-    },
-    {
-      title: "Card Description",
-      accessorKey: "description",
-      width: 300,
-    },
-  ];
-  const data = [
-    {
-      title: "Jira Issue Text",
-      description: (
-        <div
-          style={{ backgroundColor: "green", color: "white" }}
-        >{`I'm a custom component`}</div>
-      ),
-    },
-    {
-      title: "Jira Issue 2 Text",
-      description: "I'm text",
-    },
-    {
-      title: "Jira Issue 3 Text",
-      description: "Ab mujhe bhi peer-pressure mein kuch hona padhega kya ?",
-    },
-  ];
+  // const columns = [
+  //   {
+  //     title: "Card Title",
+  //     accessorKey: "title",
+  //     width: 200,
+  //   },
+  //   {
+  //     title: "Card Description",
+  //     accessorKey: "description",
+  //     width: 300,
+  //   },
+  // ];
+  // const data = [
+  //   {
+  //     title: "Jira Issue Text",
+  //     description: (
+  //       <div
+  //         style={{ backgroundColor: "green", color: "white" }}
+  //       >{`I'm a custom component`}</div>
+  //     ),
+  //   },
+  //   {
+  //     title: "Jira Issue 2 Text",
+  //     description: "I'm text",
+  //   },
+  //   {
+  //     title: "Jira Issue 3 Text",
+  //     description: "Ab mujhe bhi peer-pressure mein kuch hona padhega kya ?",
+  //   },
+  // ];
 
   return (
     <div className="App">
       <Devtools />
-      <Table columns={columns} data={data} />
-      <HolidaysSection settings={settingsData} setSettings={setSettingsData} isLoading={isLoading}/>
+      <IssueLocatorSection 
+        settings={settingsData}
+        setSettings={setSettingsData}
+        isLoading={isLoading}
+      />
+      <HolidaysSection
+        settings={settingsData}
+        setSettings={setSettingsData}
+        isLoading={isLoading}
+      />
+      <GreetingsSection
+        settings={settingsData}
+        setSettings={setSettingsData}
+        isLoading={isLoading}
+      />
     </div>
   );
 }

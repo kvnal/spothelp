@@ -1,3 +1,4 @@
+import React from "react";
 const SectionTitle = (props) => {
   const { title, subTitle, buttonComponent } = props;
   return (
@@ -6,7 +7,7 @@ const SectionTitle = (props) => {
         <span style={{ fontSize: "1.4em" }}>{title}</span>
         <div className="float-end d-flex">{buttonComponent}</div>
       </div>
-      <div style={{ color: "#44546F" }}>
+      <div style={{ color: "#44546F" }} className="mb-5">
         {subTitle}
       </div>
     </>
