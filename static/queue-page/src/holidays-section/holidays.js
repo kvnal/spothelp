@@ -23,7 +23,7 @@ const mapHolidayDataToTable = (settings, setSettings) => {
           <Toggle
             id="toggle-default"
             isChecked={weeklyHolidays[dayofTheWeek] ?? false}
-            onChange={(e) => {
+            onChange={() => {
               // set settings here
               setSettings((settings) => ({
                 ...settings,
@@ -58,7 +58,9 @@ const HolidaysSection = (props) => {
       width: 100,
     },
   ];
-  const weeklyData = settings? mapHolidayDataToTable(settings, setSettings) : undefined;
+  const weeklyData = settings
+    ? mapHolidayDataToTable(settings, setSettings)
+    : undefined;
   return (
     <>
       <SectionTitle
@@ -70,7 +72,11 @@ const HolidaysSection = (props) => {
       <div className="d-flex" style={{ width: "100%" }}>
         <div className="col-6"></div>
         <div className="col-6">
-          <Table columns={weeklyHolidayColumns} data={weeklyData} />
+          <Table
+            columns={weeklyHolidayColumns}
+            data={weeklyData}
+            loading={isLoading}
+          />
         </div>
       </div>
     </>
