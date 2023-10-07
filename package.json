@@ -3,6 +3,7 @@
   "version": "1.0.15",
   "main": "index.js",
   "license": "MIT",
+  "type": "module",
   "private": true,
   "scripts": {
     "lint": "./node_modules/.bin/eslint src/**/* || npm run --silent hook-errors",
@@ -23,6 +24,7 @@
     "@forge/resolver": "^1.5.17",
     "@forge/ui": "^1.9.5",
     "axios": "^1.5.1",
+    "html-to-text": "^9.0.5",
     "nodemon": "^3.0.1",
     "ws": "^8.14.2"
   }

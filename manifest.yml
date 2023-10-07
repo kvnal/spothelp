@@ -37,6 +37,7 @@ permissions:
     - 'read:issue-details:jira'
     - 'read:jira-user'
     - 'read:confluence-content.summary'
+    - 'write:confluence-content'
   content:
     styles:
       - 'unsafe-inline'

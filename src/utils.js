@@ -1,14 +1,20 @@
 import api, { route } from "@forge/api";
+import { convert } from "html-to-text";
+
 
 class Utils {
 
   getConfluenceBody = async (id) => {
-    let response = await api.asUser().requestConfluence(route`/wiki/rest/api/content/${id}?expand=body.dynamic`);
+    // let response = await api.asUser().requestConfluence(route`/wiki/rest/api/content/${id}?expand=body.dynamic`);
+    let response = await api.asUser().requestConfluence(route`/wiki/rest/api/content/${id}?expand=body.view`);
 
     let pageBody = await response.json();
 
-    console.log(pageBody);
-    return pageBody;
+    let bodyView = pageBody['body']['view']
+
+    let plainText = convert(bodyView['value'])
+    // console.log(plainText);/
+    return {raw : plainText, body : bodyView};
 
   };
 
@@ -77,6 +83,7 @@ class Utils {
       return response.filter(user => (user["accountType"] == "atlassian" && user.active == true));
     }
   };
+
 
 
   ///////////
@@ -151,6 +158,47 @@ class Utils {
     }
   }
 
+
+  CONFLUENCE_TEAM_DESC_TEMPLATE_BODY = {
+    "id": "1671169",
+    "title": "Team Name ",
+    "type": "page",
+    "space": {
+      "id": 1245186,
+      "key": "JSC",
+      "name": "jira-scrum-company",
+      "type": "global",
+      "status": "current",
+      "_expandable": {
+        "settings": "/rest/api/space/JSC/settings",
+        "metadata": "",
+        "operations": "",
+        "lookAndFeel": "/rest/api/settings/lookandfeel?spaceKey=JSC",
+        "identifiers": "",
+        "permissions": "",
+        "icon": "",
+        "description": "",
+        "theme": "/rest/api/space/JSC/theme",
+        "history": "",
+        "homepage": "/rest/api/content/1245262"
+      },
+      "_links": {
+        "webui": "/spaces/JSC",
+        "self": "https://nuvs.atlassian.net/wiki/rest/api/space/JSC"
+      }
+    },
+    "status": "current",
+    "body": {
+      "storage": {
+        "value": "<p>test data</p><p><strong>bold data</strong></p><h1>heading data</h1><p><span style=\"color: rgb(255,86,48);\">colored data</span></p><p />",
+        "representation": "storage"
+      }
+    }
+  }
+  
+  DEFAULT_CONFLUENCE_TEAM_DESC_TEMPLATE = "<h2>Technical Team Name:<em>Insert name of your technical team here</em></h2><h3>Description:</h3><p>The<strong>insert name of your technical team here</strong>is responsible for<em>briefly describe the main area of focus for this team</em>. They work collaboratively with other teams across the organization to<em>list at least two key stakeholders or teams that this team works closely with</em>. The primary responsibilities of this team include:</p><ul><li><strong>List at least three specific technical tasks or activities that this team handles:</strong><br>Some examples might include things like &quot;designing and implementing new features,&quot; &quot;troubleshooting and resolving technical issues,&quot; or &quot;maintaining and optimizing existing software.&quot;</li></ul><h3>Skills and Expertise:</h3><p>Members of this team have strong proficiency in<em>at least one programming language or technology stack commonly used by this team</em>, as well as knowledge of additional tools and technologies as needed. Some common skills and expertise for this team might include:</p><ul><li>Programming languages:<em>insert list of relevant programming languages or technologies</em></li><li>Frameworks and libraries:<em>insert list of relevant frameworks or libraries</em></li><li>Databases:<em>insert list of relevant databases or data storage solutions</em></li><li>Cloud platforms:<em>insert list of relevant cloud platforms</em></li><li>Security protocols and standards:<em>insert list of relevant security protocols or standards</em></li><li>Other relevant technologies:<em>insert any additional technologies that are commonly used by this team</em></li></ul><p>I hope this helps! Let me know if you have any questions or need further clarification.</p>"
+
+
   MOCK_EVENT_ISSUE = {
     "issue": {
       "id": "10010",
@@ -218,6 +266,58 @@ class Utils {
       "moduleKey": "event-trigger"
     }
   };
+
+  MOCK_AI_LOCATOR = {
+    "team_name": "team a",
+    "assignee":{},
+    "jira": {
+        "id": 1,
+        "self": "https://nuvs.atlassian.net/rest/agile/1.0/board/1",
+        "name": "JSC board",
+        "type": "scrum",
+        "location": {
+            "projectId": 10001,
+            "displayName": "jira-scrum-company (JSC)",
+            "projectName": "jira-scrum-company",
+            "projectKey": "JSC",
+            "projectTypeKey": "software",
+            "avatarURI": "https://nuvs.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10422?size=small",
+            "name": "jira-scrum-company (JSC)"
+        }
+    },
+    "confluence": {
+        "id": "1769492",
+        "type": "page",
+        "status": "current",
+        "title": "Getting started in Confluence",
+        "macroRenderedOutput": {},
+        "extensions": {
+            "position": 604
+        },
+        "_expandable": {
+            "container": "/rest/api/space/~701211848c046b89f4f8fa22f846875694d2a",
+            "metadata": "",
+            "restrictions": "/rest/api/content/33363/restriction/byOperation",
+            "history": "/rest/api/content/33363/history",
+            "body": "",
+            "version": "",
+            "descendants": "/rest/api/content/33363/descendant",
+            "space": "/rest/api/space/~701211848c046b89f4f8fa22f846875694d2a",
+            "childTypes": "",
+            "schedulePublishInfo": "",
+            "operations": "",
+            "schedulePublishDate": "",
+            "children": "/rest/api/content/33363/child",
+            "ancestors": ""
+        },
+        "_links": {
+            "self": "https://nuvs.atlassian.net/wiki/rest/api/content/33363",
+            "tinyui": "/x/U4I",
+            "editui": "/pages/resumedraft.action?draftId=33363",
+            "webui": "/spaces/~701211848c046b89f4f8fa22f846875694d2a/pages/33363/Getting+started+in+Confluence"
+        }
+    }
+}
 }
 
 export default Utils;

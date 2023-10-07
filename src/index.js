@@ -8,29 +8,28 @@ const STORAGE_HOLIDAYS_KEY = "holidays";
 const STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY = "jiraboards";
 
 const DEFAULT_SETTING_CONFIG = {
-  which_data:"setting-config",
-  auto_ticket_locator:{
-      auto_translate_english: true,
-      jira_boards:"get from api 'getAiIssueLocator'"
+  which_data: "setting-config",
+  auto_ticket_locator: {
+    auto_translate_english: true,
+    jira_boards: "get from api 'getAiIssueLocator'"
   },
-  holidays:{
-       occasional:"get from api 'getHolidays'",
-       weekly:{
-          mon:false,
-          tue:false,
-          wed:false,
-          fri:false,
-          sat:false,
-          sun:false
-       }
+  holidays: {
+    occasional: "get from api 'getHolidays'",
+    weekly: {
+      mon: false,
+      tue: false,
+      wed: false,
+      thr: false,
+      fri: false,
+      sat: false,
+      sun: false
+    }
   },
-  ai_greetings_message:{
-      ai_greetings_on_issue_create:true,
-      greet_in_local_language:true
+  ai_greetings_message: {
+    ai_greetings_on_issue_create: true,
+    greet_in_local_language: true
   }
-}
-
-
+};
 
 // event trigger
 export async function run(event, context) {
@@ -58,7 +57,7 @@ resolver.define("devInvoke", async (req) => {
 
   // let a = await utils.createJiraIssueLink("CS-1","JSC-5");
   // let a = await utils.createIssueComment("CS-2","comment from forge api...")
-  let a = await utils.getConfluenceBody("1048851");
+  let a = await utils.getConfluenceBody("1769492");
 
   // console.log(a);
 
@@ -70,42 +69,42 @@ resolver.define("devInvoke", async (req) => {
 resolver.define("getStorage", async (req) => {
   const key = req.payload.key;
   console.log(`getstorage ${key}`);
-  
+
   // await storage.delete(key)
   // return {msg : "deleted"};
-  
-  const storageData = await storage.get(key)
-  
+
+  const storageData = await storage.get(key);
+
   // console.log(storageData);
 
-  if(typeof(storageData)=="object")
-    return storageData
-  return {data : storageData ? storage!=undefined : `key ${key} not present`}
+  if (typeof (storageData) == "object")
+    return storageData;
+  return { data: storageData ? storage != undefined : `key ${key} not present` };
 });
 
 resolver.define("setStorage", async (req) => {
   const key = req.payload.key;
   const value = req.payload.value;
   // console.log(key,value);
-  const storageData = await storage.set(key,value);
-  return {msg : "key set done"}
+  const storageData = await storage.set(key, value);
+  return { msg: "key set done" };
 });
 // dev tools end
 
 
 resolver.define("getJiraBoards", async (req) => {
-  let response = (  await api.asApp().requestJira(route`/rest/agile/1.0/board`)).json();
+  let response = (await api.asApp().requestJira(route`/rest/agile/1.0/board`)).json();
 
   return response;
 });
 
 resolver.define("getConfluenceWikis", async (req) => {
   // let response = (await api.asApp().requestConfluence(route`/wiki/rest/api/content/`)).json();
-  let response =  await api.asUser().requestConfluence(route`/wiki/rest/api/content`)
+  let response = await api.asUser().requestConfluence(route`/wiki/rest/api/content`);
 
 
-  return await response.json()
-  return {msg:"response"};
+  return await response.json();
+  return { msg: "response" };
 });
 
 resolver.define("setSettings", async (req) => {
@@ -113,55 +112,83 @@ resolver.define("setSettings", async (req) => {
 });
 
 resolver.define("getSettings", async (req) => {
-    console.log("getSettings");
-    const storageData = await storage.get(STORAGE_SETTINGS_KEY);
-    
-    if(storageData == undefined){
-      await storage.set(STORAGE_SETTINGS_KEY, DEFAULT_SETTING_CONFIG);
+  console.log("getSettings");
+  const storageData = await storage.get(STORAGE_SETTINGS_KEY);
 
-      return DEFAULT_SETTING_CONFIG;
-    }
-    
-    return storageData;
+  if (storageData == undefined) {
+    await storage.set(STORAGE_SETTINGS_KEY, DEFAULT_SETTING_CONFIG);
+
+    return DEFAULT_SETTING_CONFIG;
+  }
+
+  return storageData;
 });
 
-resolver.define("setAiIssueLocator", async(req)=>{
-    // set in diff storage key
-    const storageData = await storage.get(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY);
-    await storageData.push(req.payload.value);
-    
-    // get confluence..
-    // save new prompt in diff key
-})
+resolver.define("setAiIssueLocator", async (req) => {
+  // set in diff storage key
+  // {value : payloadVal}
+  // let dataToset = req.payload.value;
+  let dataToset = utils.MOCK_AI_LOCATOR;
+  
 
-resolver.define("getAiIssueLocator", async(req)=>{
+  const storageDataArr = await storage.get(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY);
+  storageDataArr.push(dataToset);
+
+  console.log(storageDataArr);
+
+  // backend 1769492, 1769473 frontend
+  
+  // get confluence..
+  let confluencePageBody = await utils.getConfluenceBody(dataToset['confluence']['id'])
+
+  console.log(confluencePageBody['raw']);
+  // save new prompt in diff key
+});
+
+resolver.define("getAiIssueLocator", async (req) => {
   const storageData = await storage.get(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY);
-  if(storageData === undefined){
+  if (storageData === undefined) {
     await storage.set(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY, []);
     return [];
   }
-  return storageData
-})
+  return storageData;
+});
 
-resolver.define("setHolidays", async(req)=>{
-    // set in diff storage key
-    const storageData  = await storage.get(STORAGE_HOLIDAYS_KEY);
-    storageData.push(req.payload.value)
-})
-
-resolver.define("getHolidays", async(req)=>{
+resolver.define("setHolidays", async (req) => {
+  // set in diff storage key
   const storageData = await storage.get(STORAGE_HOLIDAYS_KEY);
-  if(storageData === undefined){
+  storageData.push(req.payload.value);
+});
+
+resolver.define("getHolidays", async (req) => {
+  const storageData = await storage.get(STORAGE_HOLIDAYS_KEY);
+  if (storageData === undefined) {
     await storage.set(STORAGE_HOLIDAYS_KEY, []);
     return [];
   }
-  return storageData
-})
+  return storageData;
+});
 
-resolver.define("getUsers", async(req)=>{
+resolver.define("getUsers", async (req) => {
   let users = await utils.getUsers();
   return users;
-})
+});
 
+resolver.define("createConfluenceTeamTemplate", async (req) => {
+  let bodyData = utils.DEFAULT_CONFLUENCE_TEAM_DESC_TEMPLATE;
+  let response = await api.asUser().requestConfluence(route`/wiki/rest/api/content`,
+    {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(bodyData)
+    }
+  );
+
+  return await response.json();
+  return { msg: "response" };
+});
 
 export const handler = resolver.getDefinitions();
