@@ -84,7 +84,28 @@ class Utils {
     }
   };
 
+  getLlamaTokenizePrompt = (confluenceRawBody) =>{
+    let prompt = `Tokenize the given team description in a way such that their would be sufficient info about the team. so that you would be able to recognize the given the bugs belong to this team. exclude any unnecessary text in the response. start and end tokenized text with text "START" and "END" \n\n ${confluenceRawBody}`
 
+    return prompt;
+
+  }
+
+  delay = (delayInms) => {
+    return new Promise(resolve => setTimeout(resolve, delayInms));
+  };
+
+  guessBugTeamPrompt = () =>{
+    let teamCount = 0;
+    let bugTitleDescription = null;
+    let heading = `there is an organization with ${teamCount} below listed team in technical side.`
+
+    let bugText = `now suppose their is a bug with given description: ${bugTitleDescription} \nNow guess which team from the above organization should take the responsibility of this bug. answer without explanation. start and ends team name with text "START" and "END".`
+
+
+  }
+
+  translate = "generate a text greeting  a customer by thanking them for raising query and tell them politely that team is working on it in english. feel free to be more creative in the response. exclude other text and keep it short"
 
   ///////////
 
@@ -197,6 +218,8 @@ class Utils {
   }
   
   DEFAULT_CONFLUENCE_TEAM_DESC_TEMPLATE = "<h2>Technical Team Name:<em>Insert name of your technical team here</em></h2><h3>Description:</h3><p>The<strong>insert name of your technical team here</strong>is responsible for<em>briefly describe the main area of focus for this team</em>. They work collaboratively with other teams across the organization to<em>list at least two key stakeholders or teams that this team works closely with</em>. The primary responsibilities of this team include:</p><ul><li><strong>List at least three specific technical tasks or activities that this team handles:</strong><br>Some examples might include things like &quot;designing and implementing new features,&quot; &quot;troubleshooting and resolving technical issues,&quot; or &quot;maintaining and optimizing existing software.&quot;</li></ul><h3>Skills and Expertise:</h3><p>Members of this team have strong proficiency in<em>at least one programming language or technology stack commonly used by this team</em>, as well as knowledge of additional tools and technologies as needed. Some common skills and expertise for this team might include:</p><ul><li>Programming languages:<em>insert list of relevant programming languages or technologies</em></li><li>Frameworks and libraries:<em>insert list of relevant frameworks or libraries</em></li><li>Databases:<em>insert list of relevant databases or data storage solutions</em></li><li>Cloud platforms:<em>insert list of relevant cloud platforms</em></li><li>Security protocols and standards:<em>insert list of relevant security protocols or standards</em></li><li>Other relevant technologies:<em>insert any additional technologies that are commonly used by this team</em></li></ul><p>I hope this helps! Let me know if you have any questions or need further clarification.</p>"
+
+
 
 
   MOCK_EVENT_ISSUE = {

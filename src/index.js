@@ -1,5 +1,7 @@
 import Resolver from "@forge/resolver";
 import { storage } from "@forge/api";
+import { testQueue } from "./asyncEvents";
+
 import api, { route } from "@forge/api";
 import Utils from "./utils";
 
@@ -31,10 +33,16 @@ const DEFAULT_SETTING_CONFIG = {
   }
 };
 
+
 // event trigger
 export async function run(event, context) {
   console.log("oncreate event triggered " + JSON.stringify(context));
   // console.log("oncreate event triggered " + JSON.stringify(event));
+
+  console.log("start");
+  let delayres = await  utils.delay(66*1000);
+  console.log("done");
+  
 
   // check holiday occasional from storage
   // check holiday weekly from setting
@@ -68,6 +76,13 @@ resolver.define("devInvoke", async (req) => {
 // dev tools
 resolver.define("getStorage", async (req) => {
   const key = req.payload.key;
+
+  let job = testQueue.getJob(key)
+  let jobStatus = await job.getStats()
+
+  return {status : await jobStatus.json()}
+
+
   console.log(`getstorage ${key}`);
 
   // await storage.delete(key)
@@ -133,17 +148,33 @@ resolver.define("setAiIssueLocator", async (req) => {
 
   const storageDataArr = await storage.get(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY);
   storageDataArr.push(dataToset);
+  await storage.set(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY, storageDataArr);
 
-  console.log(storageDataArr);
-
-  // backend 1769492, 1769473 frontend
   
-  // get confluence..
-  let confluencePageBody = await utils.getConfluenceBody(dataToset['confluence']['id'])
 
-  console.log(confluencePageBody['raw']);
+  let confluencePageBody = await utils.getConfluenceBody(dataToset['confluence']['id'])
+  // job-setAiIssueLocator - tokenize body + dataToset as it is + storage
+  // let tokenizedPrompt =  utils.getLlamaTokenizePrompt(confluencePageBody['raw']);
+  // console.log(`prompt ${tokenizedPrompt}`);
+
+  let payload = {msg:"this is the payload for queue",time : (new Date()).toString()}
+
+
+  let PushSettings = { delayInSeconds: 1 }
+  const jobId = await testQueue.push(payload,PushSettings);
+
+// Get the JobProgress object
+const jobProgress = testQueue.getJob(jobId);
+
+// Get stats of a particular job
+const response = await jobProgress.getStats();
+const res = await response.json();
+  return {msg:"running job in background",res:res, jobId : jobId};
+  
   // save new prompt in diff key
 });
+
+
 
 resolver.define("getAiIssueLocator", async (req) => {
   const storageData = await storage.get(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY);
@@ -190,5 +221,7 @@ resolver.define("createConfluenceTeamTemplate", async (req) => {
   return await response.json();
   return { msg: "response" };
 });
+
+
 
 export const handler = resolver.getDefinitions();

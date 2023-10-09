@@ -10,6 +10,12 @@ modules:
       function: trigger
       events:
         - avi:jira:created:issue
+  consumer:
+    - key: ai-job-consumer
+      queue: aiJobQueue
+      resolver:
+        function: queue-fn
+        method: job-event-listener
   function:
     - key: trigger
       handler: index.run
@@ -17,6 +23,8 @@ modules:
       handler: index.handler
     - key: main-conf
       handler: app.run
+    - key: queue-fn
+      handler: asyncEvents.aiJobHandler
 resources:
   - key: frontend
     tunnel:
@@ -24,7 +32,6 @@ resources:
     path: static/queue-page/build
 app:
   id: ari:cloud:ecosystem::app/c049be28-55ec-411a-972e-d969d2c16022
-
 permissions:
   scopes:
     - 'write:jira-work'
@@ -43,6 +50,11 @@ permissions:
       - 'unsafe-inline'
     scripts:
       - unsafe-inline
+      - unsafe-hashes
   external:
     images:
       - 'https://*.atlassian.net'
+    fetch:
+      backend:
+        - '*.hf.space'
+        - 'wss://*.hf.space'

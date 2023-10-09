@@ -1,8 +1,7 @@
-import axios from 'axios';
 import webSocket from "ws";
+import { fetch } from '@forge/api';
 
-class HuggingFace {
-
+class HuggingFaceChat {
     api_list = [
         {
             predict_URI: "https://huggingface-projects-llama-2-13b-chat.hf.space/run/predict",
@@ -22,36 +21,39 @@ class HuggingFace {
         },
     ];
 
+
     predict_URI = null;
     ws_URI = null;
 
     assignHuggingFaceAPI = async () => {
         for (let index = 0; index < this.api_list.length; index++) {
             const element = this.api_list[index];
-            let check = await axios.get(element.predict_URI.replace("/run/predict", "")).then(res => {
-                if (res.status == 200) {
+            let check = await fetch(element.predict_URI.replace("/run/predict", "")).then(response => {
+                if (response.status == 200) {
                     this.predict_URI = element.predict_URI;
                     this.ws_URI = element.ws_URI;
-                    // console.log({ predict_URI: this.predict_URI, ws: this.ws_URI });
+                    console.log({ predict_URI: this.predict_URI, ws: this.ws_URI });
                     return 1;
                 }
-            }).catch(res => {
-                console.log(`hugging api ${element.predict_URI} ${res}`);
+            }).catch(error => {
+                console.log(`error > hugging api assignment${element.predict_URI} ${error}`);
                 return 0;
             });
 
-            if(check) break;
+            if (check) break;
 
         }
+
+        console.log("assignHuggingFaceAPI done!")
     };
 
     generateSession_hash = () => {
         return Math.random().toString(36).substring(2);
     };
 
-    session_hash = "af233fs211"
+    session_hash = "abcd1234";
 
-    question = "how to fly to the moon?";
+    question = "how are you?";
 
     json_data_predict_api_fn_index0 = {};
     json_data_predict_api_fn_index1 = {};
@@ -60,7 +62,7 @@ class HuggingFace {
     json_data_wb_send_hash = {};
     fn_index = [6, 7, 8, 9];
 
-    systemPrompt = "You are a helpful, respectful and honest assistant with a deep knowledge of code and software design. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.\n\nIf a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.";
+    systemPrompt = 'avoid system role messages before answer to the actual question, answer the question directly. always start and ends answer with text "START" and "END".';
 
     constructor(ques) {
         this.question = ques;
@@ -70,43 +72,24 @@ class HuggingFace {
 
         this.json_data_predict_api_fn_index1 = { "data": [null, []], "event_data": null, "fn_index": this.fn_index[1], "session_hash": this.session_hash };
 
-        this.json_data_predict_api_fn_index2 = { "data": [null, [[this.question, ""]], ""], "event_data": null, "fn_index": this.fn_index[2], "session_hash": this.session_hash };
+        this.json_data_predict_api_fn_index2 = { "data": [null, [[this.question, ""]], this.systemPrompt], "event_data": null, "fn_index": this.fn_index[2], "session_hash": this.session_hash };
 
         this.json_data_wb_send_hash = { "fn_index": this.fn_index[3], "session_hash": this.session_hash };
 
-        this.json_data_wb_send_data = { "data": [null, [[this.question, ""]], "", 1024, 0.1, 0.9, 10], "event_data": null, "fn_index": this.fn_index[3], "session_hash": this.session_hash };
+        this.json_data_wb_send_data = { "data": [null, [[this.question, ""]], this.systemPrompt, 1024, 0.1, 0.9, 10], "event_data": null, "fn_index": this.fn_index[3], "session_hash": this.session_hash };
 
-        // console.log(this.question)
     }
 
-
-
-    /////////////////
-    //predict API payload
-
-
-
-    // wb payload
-
-
-    /////////////
-
-    // predict_URI = "https://codellama-codellama-13b-chat.hf.space/run/predict";
-    // ws_URI = "wss://codellama-codellama-13b-chat.hf.space/queue/join";
-    // predict_URI = "https://huggingface-projects-llama-2-13b-chat.hf.space/run/predict";
-    // ws_URI = "wss://huggingface-projects-llama-2-13b-chat.hf.space/queue/join";
-    // predict_URI = "https://ysharma-explore-llamav2-with-tgi.hf.space/run/predict";
-    // ws_URI = "wss://ysharma-explore-llamav2-with-tgi.hf.space/queue/join";
-
-    ws = (json_data_wb_send_data, json_data_wb_send_hash) => {
-
+    ws = async (json_data_wb_send_data, json_data_wb_send_hash) => {
+        
+        console.log("ws inn ok ");
         let sendMessageWS = (ws, data, msg_type = "Nan") => {
             let stringy = JSON.stringify(data);
             ws.send(stringy);
             console.log(`wb: sendMessage <${msg_type}> `, stringy);
             return 1;
         };
-
+        console.log("ws inn");
         let ws = new webSocket(this.ws_URI);
 
         ws.onopen = function () {
@@ -148,20 +131,41 @@ class HuggingFace {
 
     };
 
-    llama = () => {
-        axios.post(this.predict_URI, this.json_data_predict_api_fn_index0).then(res => {
-            axios.post(this.predict_URI, this.json_data_predict_api_fn_index1).then(res => {
-                axios.post(this.predict_URI, this.json_data_predict_api_fn_index2).then(res => {
+    llama = async () => {
+        await this.assignHuggingFaceAPI();
+        fetch(this.predict_URI,
+            {
+                method: "POST", body: JSON.stringify(this.json_data_predict_api_fn_index0),
+                headers: { 'Content-Type': 'application/json' }
+            }
+        ).then(response0 => {
+            fetch(this.predict_URI,
+                {
+                    method: "POST", body: JSON.stringify(this.json_data_predict_api_fn_index1),
+                    headers: { 'Content-Type': 'application/json' }
+                }
+            ).then(response1 => {
+                fetch(this.predict_URI,
+                    {
+                        method: "POST", body: JSON.stringify(this.json_data_predict_api_fn_index2),
+                        headers: { 'Content-Type': 'application/json' }
+                    }
+                ).then(async (response2) => {
                     console.log("predict api completed!");
-                    // let wsResult = this.ws(this.json_data_wb_send_data, this.json_data_wb_send_hash);
-                    // return wsResult;
+                    let wsResult = await this.ws(this.json_data_wb_send_data, this.json_data_wb_send_hash);
+                    return wsResult;
+                    // this.wsPromise(this.json_data_wb_send_data, this.json_data_wb_send_hash).then(res => resolve(res));
                 });
             });
+        }).catch(error0 => {
+            console.log(`huggingface error0 predict ${error0}`);
         });
+    
+       
 
     };
 
-    wsPromise = (json_data_wb_send_data, json_data_wb_send_hash) => {
+    wsPromise = (json_data_wb_send_data=this.json_data_wb_send_data, json_data_wb_send_hash = this.json_data_wb_send_hash) => {
 
         let sendMessageWS = (ws, data, msg_type = "Nan") => {
             let stringy = JSON.stringify(data);
@@ -171,7 +175,7 @@ class HuggingFace {
         };
 
         return new Promise((resolve, reject) => {
-
+            console.log("ws in");
             let ws = new webSocket(this.ws_URI);
 
             ws.onopen = function () {
@@ -184,8 +188,6 @@ class HuggingFace {
 
 
             ws.onmessage = function (event) {
-                // console.log("%s",event.data)
-
                 let event_data = JSON.parse(event.data);
 
                 switch (event_data['msg']) {
@@ -218,42 +220,37 @@ class HuggingFace {
     };
 
     llamaPromise = async () => {
-
-        this.question = ques;
-        this.session_hash = this.generateSession_hash();
-
-        this.json_data_predict_api_fn_index0 = { "data": [this.question], "event_data": null, "fn_index": this.fn_index[0], "session_hash": this.session_hash };
-
-        this.json_data_predict_api_fn_index1 = { "data": [null, []], "event_data": null, "fn_index": this.fn_index[1], "session_hash": this.session_hash };
-
-        this.json_data_predict_api_fn_index2 = { "data": [null, [[this.question, ""]], ""], "event_data": null, "fn_index": this.fn_index[2], "session_hash": this.session_hash };
-
-        this.json_data_wb_send_hash = { "fn_index": this.fn_index[3], "session_hash": this.session_hash };
-
-        this.json_data_wb_send_data = { "data": [null, [[this.question, ""]], "", 1024, 0.1, 0.9, 10], "event_data": null, "fn_index": this.fn_index[3], "session_hash": this.session_hash };
-
         await this.assignHuggingFaceAPI();
 
         return new Promise((resolve, reject) => {
-            axios.post(this.predict_URI, this.json_data_predict_api_fn_index0).then(res => {
-                axios.post(this.predict_URI, this.json_data_predict_api_fn_index1).then(res => {
-                    axios.post(this.predict_URI, this.json_data_predict_api_fn_index2).then(res => {
+            fetch(this.predict_URI,
+                {
+                    method: "POST", body: JSON.stringify(this.json_data_predict_api_fn_index0),
+                    headers: { 'Content-Type': 'application/json' }
+                }
+            ).then(response0 => {
+                fetch(this.predict_URI,
+                    {
+                        method: "POST", body: JSON.stringify(this.json_data_predict_api_fn_index1),
+                        headers: { 'Content-Type': 'application/json' }
+                    }
+                ).then(response1 => {
+                    fetch(this.predict_URI,
+                        {
+                            method: "POST", body: JSON.stringify(this.json_data_predict_api_fn_index2),
+                            headers: { 'Content-Type': 'application/json' }
+                        }
+                    ).then(response2 => {
                         console.log("predict api completed!");
-                        // let wsResult = this.ws(this.json_data_wb_send_data, this.json_data_wb_send_hash);
-
-                        this.wsPromise(this.json_data_wb_send_data,this.json_data_wb_send_hash).then
-                        (res => {
-                            resolve(res);
-                        });
+                        this.wsPromise(this.json_data_wb_send_data, this.json_data_wb_send_hash).then(res => resolve(res));
                     });
                 });
-
-            }).catch(res=>console.log("err"));
-
-
+            }).catch(error0 => {
+                console.log(`huggingface error0 predict ${error0}`);
+            });
         });
     };
 
 }
 
-export default HuggingFace;
+export default HuggingFaceChat;
