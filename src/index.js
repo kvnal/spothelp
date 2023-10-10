@@ -57,6 +57,7 @@ export async function run(event, context) {
 const resolver = new Resolver();
 const utils = new Utils();
 
+// devTools
 resolver.define("devInvoke", async (req) => {
   let func = req.payload.func;
   let key = req.payload.key;
@@ -87,41 +88,8 @@ resolver.define("devInvoke", async (req) => {
     return { j1: jobProgress1, j2: jobProgress2, j3: jobProgress3 };
   }
 
-
-  // return a;
-  return "🔴 Hello from the backend.";
 });
-
-// dev tools
-resolver.define("devfunc", async (req) => {
-  const key = req.payload.key;
-
-  // let job = testQueue.getJob(key);
-  // let jobStatus = await job.getStats();
-
-  // return { status: await jobStatus.json() };
-
-
-  // console.log(`getstorage ${key}`);
-
-  // await storage.delete(key)
-  // return {msg : "deleted"};
-
-  const storageData = await storage.get(key);
-
-  // console.log(storageData);
-
-
-});
-
-resolver.define("setStorage", async (req) => {
-  const key = req.payload.key;
-  const value = req.payload.value;
-  // console.log(key,value);
-  const storageData = await storage.set(key, value);
-  return { msg: "key set done" };
-});
-// dev tools end
+//  devTools end
 
 
 resolver.define("getJiraBoards", async (req) => {
@@ -159,18 +127,32 @@ resolver.define("getSettings", async (req) => {
 resolver.define("setAiIssueLocator", async (req) => {
   // set in diff storage key
   // {value : payloadVal}
-
   let dataToset = null;
-  // dataToset = req.payload.value;
-  dataToset = utils.MOCK_AI_LOCATOR;
+  if ("mock" in req.payload.value) {
+    dataToset = utils.MOCK_AI_LOCATOR;
+    console.log("using mock data..");
+  } else {
+    dataToset = req.payload.value;
+  }
 
+  try {
+    if(dataToset && "confluence" in dataToset){
 
-  const storageDataArr = await storage.get(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY);
-  storageDataArr.push(dataToset);
-  await storage.set(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY, storageDataArr);
-
-  await testQueue1.push({ value: dataToset });
-  return 1;
+      const storageDataArr = await storage.get(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY);
+      
+      storageDataArr.push(dataToset);
+      console.log(`storageData >> ${JSON.stringify(storageDataArr)}`);
+      await storage.set(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY, storageDataArr);
+      
+      await testQueue1.push({ value: dataToset });
+      return { msg: 1 };
+    }
+    return {msg : "datatoset null"}
+  }
+  catch (err) {
+    console.log(`error setAiIssueLocator ${err}`);
+    return { error: err };
+  }
 
 });
 

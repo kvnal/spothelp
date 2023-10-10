@@ -15,9 +15,16 @@ class Utils {
   STORAGE_OPENAI_KEY = "openai"
   // 
 
-  getConfluenceBody = async (id) => {
+  getConfluenceBody = async (id, asApp = false) => {
     // let response = await api.asUser().requestConfluence(route`/wiki/rest/api/content/${id}?expand=body.dynamic`);
-    let response = await api.asUser().requestConfluence(route`/wiki/rest/api/content/${id}?expand=body.view`);
+    let response = null;
+    if(!asApp){
+      response = await api.asUser().requestConfluence(route`/wiki/rest/api/content/${id}?expand=body.view`);
+
+    }else{
+      response = await api.asApp().requestConfluence(route`/wiki/rest/api/content/${id}?expand=body.view`);
+    }
+    
 
     let pageBody = await response.json();
 
@@ -304,7 +311,21 @@ class Utils {
 
   MOCK_AI_LOCATOR = {
     "team_name": "team a",
-    "assignee":{},
+    "assignee":{
+      "self": "https://api.atlassian.com/ex/jira/e894bd1b-eba9-4e06-adff-f0985bd90e2f/rest/api/3/user?accountId=70121:1848c046-b89f-4f8f-a22f-846875694d2a",
+      "accountId": "70121:1848c046-b89f-4f8f-a22f-846875694d2a",
+      "accountType": "atlassian",
+      "avatarUrls": {
+        "48x48": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/70121:1848c046-b89f-4f8f-a22f-846875694d2a/19b03f53-cba2-447b-b806-ad7a9c160d36/48",
+        "24x24": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/70121:1848c046-b89f-4f8f-a22f-846875694d2a/19b03f53-cba2-447b-b806-ad7a9c160d36/24",
+        "16x16": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/70121:1848c046-b89f-4f8f-a22f-846875694d2a/19b03f53-cba2-447b-b806-ad7a9c160d36/16",
+        "32x32": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/70121:1848c046-b89f-4f8f-a22f-846875694d2a/19b03f53-cba2-447b-b806-ad7a9c160d36/32"
+      },
+      "displayName": "Kunal Singh",
+      "active": true,
+      "timeZone": "Asia/Kolkata",
+      "locale": "en_US"
+    },
     "jira": {
         "id": 1,
         "self": "https://nuvs.atlassian.net/rest/agile/1.0/board/1",
