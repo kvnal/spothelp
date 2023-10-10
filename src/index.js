@@ -1,6 +1,6 @@
 import Resolver from "@forge/resolver";
 import { storage } from "@forge/api";
-import {testQueue1, testQueue2, testQueue3} from './asyncEvents'
+import { testQueue1, testQueue2, testQueue3 } from './asyncEvents';
 
 import api, { route } from "@forge/api";
 import Utils from "./utils";
@@ -58,30 +58,42 @@ const resolver = new Resolver();
 const utils = new Utils();
 
 resolver.define("devInvoke", async (req) => {
-  // let a = utils.getConfluenceBody(33364)
-  // let a = await utils.createJiraIssue(utils.MOCK_EVENT_ISSUE, "10001","6326e30c14c6b4b221099d1f")
+  let func = req.payload.func;
+  let key = req.payload.key;
 
-  // let a = await utils.createJiraIssueLink("CS-1","JSC-5");
-  // let a = await utils.createIssueComment("CS-2","comment from forge api...")
-  // let a = await utils.getConfluenceBody("1769492");
+  if (func == "del") {
+    await storage.delete(key);
+    return { msg: `deleted ${key}` };
+  }
+  else if (func == "get") {
+    let storageItem = await storage.get(key);
+    return { data: storageItem };
+  }
+  else if (func == "set") {
+    let value = req.payload.value;
+    await storage.set(key, value);
+    return { msg: `stored at ${key}` };
+  }
+  else {
+    // other function 
+    let job1 = await testQueue1.push("ok");
+    let job2 = await testQueue2.push("ok");
+    let job3 = await testQueue3.push("ok");
 
-  // console.log(a);
+    let jobProgress1 = await (await testQueue1.getJob(job1).getStats()).json();
+    let jobProgress2 = await (await testQueue2.getJob(job2).getStats()).json();
+    let jobProgress3 = await (await testQueue3.getJob(job3).getStats()).json();
 
-  let job1 = await testQueue1.push("ok");
-  let job2 = await testQueue2.push("ok");
-  let job3 = await testQueue3.push("ok");
+    return { j1: jobProgress1, j2: jobProgress2, j3: jobProgress3 };
+  }
 
-  let jobProgress1 = await (await testQueue1.getJob(job1).getStats()).json()
-  let jobProgress2 = await (await testQueue2.getJob(job2).getStats()).json()
-  let jobProgress3 = await (await testQueue3.getJob(job3).getStats()).json()
 
-  return {j1 : jobProgress1 , j2 : jobProgress2, j3 : jobProgress3};
   // return a;
   return "🔴 Hello from the backend.";
 });
 
 // dev tools
-resolver.define("getStorage", async (req) => {
+resolver.define("devfunc", async (req) => {
   const key = req.payload.key;
 
   // let job = testQueue.getJob(key);
@@ -99,9 +111,7 @@ resolver.define("getStorage", async (req) => {
 
   // console.log(storageData);
 
-  if (typeof (storageData) == "object")
-    return storageData;
-  return { data: storageData ? storage != undefined : `key ${key} not present` };
+
 });
 
 resolver.define("setStorage", async (req) => {
@@ -159,7 +169,7 @@ resolver.define("setAiIssueLocator", async (req) => {
   storageDataArr.push(dataToset);
   await storage.set(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY, storageDataArr);
 
-  await testQueue1.push({value : dataToset})
+  await testQueue1.push({ value: dataToset });
   return 1;
 
 });
@@ -179,9 +189,9 @@ resolver.define("getAiIssueLocator", async (req) => {
 resolver.define("setHolidays", async (req) => {
   // set in diff storage key
   const storageData = await storage.get(STORAGE_HOLIDAYS_KEY);
-  let holidayObj = req.payload.value
-  
-  let date_ = new Date(holidayObj['date'])
+  let holidayObj = req.payload.value;
+
+  let date_ = new Date(holidayObj['date']);
   holidayObj['date_code'] = date_.toLocaleDateString("en-US");
   await storageData.push(holidayObj);
 
