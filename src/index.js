@@ -1,6 +1,6 @@
 import Resolver from "@forge/resolver";
 import { storage } from "@forge/api";
-import { testQueue } from "./asyncEvents";
+import {testQueue1, testQueue2, testQueue3} from './asyncEvents'
 
 import api, { route } from "@forge/api";
 import Utils from "./utils";
@@ -37,12 +37,10 @@ const DEFAULT_SETTING_CONFIG = {
 // event trigger
 export async function run(event, context) {
   console.log("oncreate event triggered " + JSON.stringify(context));
-  // console.log("oncreate event triggered " + JSON.stringify(event));
+  // console.log("oncreate event triggered " + JSON.stringify(event));  
 
-  console.log("start");
-  let delayres = await  utils.delay(66*1000);
-  console.log("done");
-  
+  // job2 - check holiday + detect language + generate greetings > comment
+  // job3 - get storage + generate prompt + count token + ai locate bug to team > perform action.
 
   // check holiday occasional from storage
   // check holiday weekly from setting
@@ -65,11 +63,20 @@ resolver.define("devInvoke", async (req) => {
 
   // let a = await utils.createJiraIssueLink("CS-1","JSC-5");
   // let a = await utils.createIssueComment("CS-2","comment from forge api...")
-  let a = await utils.getConfluenceBody("1769492");
+  // let a = await utils.getConfluenceBody("1769492");
 
   // console.log(a);
 
-  return a;
+  let job1 = await testQueue1.push("ok");
+  let job2 = await testQueue2.push("ok");
+  let job3 = await testQueue3.push("ok");
+
+  let jobProgress1 = await (await testQueue1.getJob(job1).getStats()).json()
+  let jobProgress2 = await (await testQueue2.getJob(job2).getStats()).json()
+  let jobProgress3 = await (await testQueue3.getJob(job3).getStats()).json()
+
+  return {j1 : jobProgress1 , j2 : jobProgress2, j3 : jobProgress3};
+  // return a;
   return "🔴 Hello from the backend.";
 });
 
@@ -77,10 +84,10 @@ resolver.define("devInvoke", async (req) => {
 resolver.define("getStorage", async (req) => {
   const key = req.payload.key;
 
-  let job = testQueue.getJob(key)
-  let jobStatus = await job.getStats()
+  let job = testQueue.getJob(key);
+  let jobStatus = await job.getStats();
 
-  return {status : await jobStatus.json()}
+  return { status: await jobStatus.json() };
 
 
   console.log(`getstorage ${key}`);
@@ -144,33 +151,33 @@ resolver.define("setAiIssueLocator", async (req) => {
   // {value : payloadVal}
   // let dataToset = req.payload.value;
   let dataToset = utils.MOCK_AI_LOCATOR;
-  
+
 
   const storageDataArr = await storage.get(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY);
   storageDataArr.push(dataToset);
   await storage.set(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY, storageDataArr);
 
-  
 
-  let confluencePageBody = await utils.getConfluenceBody(dataToset['confluence']['id'])
-  // job-setAiIssueLocator - tokenize body + dataToset as it is + storage
+
+  let confluencePageBody = await utils.getConfluenceBody(dataToset['confluence']['id']);
+  // job-1 job-setAiIssueLocator - tokenize body + store total tokenCount + dataToset as it is + storage
   // let tokenizedPrompt =  utils.getLlamaTokenizePrompt(confluencePageBody['raw']);
   // console.log(`prompt ${tokenizedPrompt}`);
 
-  let payload = {msg:"this is the payload for queue",time : (new Date()).toString()}
+  let payload = { msg: "this is the payload for queue", time: (new Date()).toString() };
 
 
-  let PushSettings = { delayInSeconds: 1 }
-  const jobId = await testQueue.push(payload,PushSettings);
+  // let PushSettings = { delayInSeconds: 1 }
+  // const jobId = await testQueue.push(payload,PushSettings);
 
-// Get the JobProgress object
-const jobProgress = testQueue.getJob(jobId);
+  // Get the JobProgress object
+  // const jobProgress = testQueue.getJob(jobId);
 
-// Get stats of a particular job
-const response = await jobProgress.getStats();
-const res = await response.json();
-  return {msg:"running job in background",res:res, jobId : jobId};
-  
+  // Get stats of a particular job
+  // const response = await jobProgress.getStats();
+  // const res = await response.json();
+  // return { msg: "running job in background", res: res, jobId: jobId };
+
   // save new prompt in diff key
 });
 

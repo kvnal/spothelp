@@ -12,10 +12,20 @@ modules:
         - avi:jira:created:issue
   consumer:
     - key: ai-job-consumer
-      queue: aiJobQueue
+      queue: aiJobQueueJob1
       resolver:
         function: queue-fn
-        method: job-event-listener
+        method: job-event-listener1
+    - key: ai-job-consumer2
+      queue: aiJobQueueJob2
+      resolver:
+        function: queue-fn
+        method: job-event-listener2
+    - key: ai-job-consumer3
+      queue: aiJobQueueJob3
+      resolver:
+        function: queue-fn
+        method: job-event-listener3
   function:
     - key: trigger
       handler: index.run
