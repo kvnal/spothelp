@@ -84,13 +84,13 @@ resolver.define("devInvoke", async (req) => {
 resolver.define("getStorage", async (req) => {
   const key = req.payload.key;
 
-  let job = testQueue.getJob(key);
-  let jobStatus = await job.getStats();
+  // let job = testQueue.getJob(key);
+  // let jobStatus = await job.getStats();
 
-  return { status: await jobStatus.json() };
+  // return { status: await jobStatus.json() };
 
 
-  console.log(`getstorage ${key}`);
+  // console.log(`getstorage ${key}`);
 
   // await storage.delete(key)
   // return {msg : "deleted"};
@@ -149,36 +149,19 @@ resolver.define("getSettings", async (req) => {
 resolver.define("setAiIssueLocator", async (req) => {
   // set in diff storage key
   // {value : payloadVal}
-  // let dataToset = req.payload.value;
-  let dataToset = utils.MOCK_AI_LOCATOR;
+
+  let dataToset = null;
+  // dataToset = req.payload.value;
+  dataToset = utils.MOCK_AI_LOCATOR;
 
 
   const storageDataArr = await storage.get(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY);
   storageDataArr.push(dataToset);
   await storage.set(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY, storageDataArr);
 
+  await testQueue1.push({value : dataToset})
+  return 1;
 
-
-  let confluencePageBody = await utils.getConfluenceBody(dataToset['confluence']['id']);
-  // job-1 job-setAiIssueLocator - tokenize body + store total tokenCount + dataToset as it is + storage
-  // let tokenizedPrompt =  utils.getLlamaTokenizePrompt(confluencePageBody['raw']);
-  // console.log(`prompt ${tokenizedPrompt}`);
-
-  let payload = { msg: "this is the payload for queue", time: (new Date()).toString() };
-
-
-  // let PushSettings = { delayInSeconds: 1 }
-  // const jobId = await testQueue.push(payload,PushSettings);
-
-  // Get the JobProgress object
-  // const jobProgress = testQueue.getJob(jobId);
-
-  // Get stats of a particular job
-  // const response = await jobProgress.getStats();
-  // const res = await response.json();
-  // return { msg: "running job in background", res: res, jobId: jobId };
-
-  // save new prompt in diff key
 });
 
 
@@ -187,6 +170,7 @@ resolver.define("getAiIssueLocator", async (req) => {
   const storageData = await storage.get(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY);
   if (storageData === undefined) {
     await storage.set(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY, []);
+    await storage.set(utils.STORAGE_TOKENIZED_CONFLUENCE_BODY, []);
     return [];
   }
   return storageData;
@@ -195,7 +179,13 @@ resolver.define("getAiIssueLocator", async (req) => {
 resolver.define("setHolidays", async (req) => {
   // set in diff storage key
   const storageData = await storage.get(STORAGE_HOLIDAYS_KEY);
-  storageData.push(req.payload.value);
+  let holidayObj = req.payload.value
+  
+  let date_ = new Date(holidayObj['date'])
+  holidayObj['date_code'] = date_.toLocaleDateString("en-US");
+  await storageData.push(holidayObj);
+
+  return holidayObj;
 });
 
 resolver.define("getHolidays", async (req) => {

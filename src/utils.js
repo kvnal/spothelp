@@ -4,6 +4,17 @@ import { convert } from "html-to-text";
 
 class Utils {
 
+  USE_MOCK_AI = true;
+  MIMIC_TODAYS_DATE_TO = null;
+  
+  // storage keys
+  STORAGE_SETTINGS_KEY = "settings";
+  STORAGE_HOLIDAYS_KEY = "holidays";
+  STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY = "jiraboards";
+  STORAGE_TOKENIZED_CONFLUENCE_BODY = "jiraboardsTokenize"
+  STORAGE_OPENAI_KEY = "openai"
+  // 
+
   getConfluenceBody = async (id) => {
     // let response = await api.asUser().requestConfluence(route`/wiki/rest/api/content/${id}?expand=body.dynamic`);
     let response = await api.asUser().requestConfluence(route`/wiki/rest/api/content/${id}?expand=body.view`);
@@ -108,6 +119,7 @@ class Utils {
   translate = "generate a text greeting  a customer by thanking them for raising query and tell them politely that team is working on it in english. feel free to be more creative in the response. exclude other text and keep it short"
 
   ///////////
+
 
 
   ISSUE_DEFAULT_BODY = {
