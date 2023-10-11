@@ -22,7 +22,6 @@ function App() {
       setLoading(false);
     });
   }, []);
-  console.log(settingsData);
   // const columns = [
   //   {
   //     title: "Card Title",

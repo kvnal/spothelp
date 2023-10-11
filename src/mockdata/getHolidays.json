@@ -1,10 +1,10 @@
 [
     {
-        "holiday_name": "christmas",
-        "date": "25/12/23"
+        "holiday_name": "Christmas",
+        "date": 1703376000000
     },
     {
-        "holiday_name": "christmas",
-        "date": "25/12/23"
+        "holiday_name": "Christmas Day",
+        "date": 1703462400000
     }
 ]

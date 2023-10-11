@@ -21,7 +21,7 @@ const Devtools = () => {
   };
 
   const setStorage = () => {
-    invoke("setStorage", { key: inputvalue, value: data }).then((result) => {
+    invoke("setStorage", { key: inputvalue, value: data?.data }).then((result) => {
       console.log(result);
       setdata(result);
     });

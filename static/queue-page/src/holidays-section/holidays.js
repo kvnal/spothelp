@@ -1,9 +1,12 @@
 import ButtonGroup from "@atlaskit/button/button-group";
 import Button from "@atlaskit/button/standard-button";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { invoke } from "@forge/bridge";
 import SectionTitle from "../parts/section-title/section-title";
 import Toggle from "@atlaskit/toggle";
 import Table from "../parts/table/table";
+import { capitaliseFirstLetterCase } from "../helpers";
+import moment from "moment";
 
 const ActionsContent = () => (
   <ButtonGroup>
@@ -12,7 +15,7 @@ const ActionsContent = () => (
   </ButtonGroup>
 );
 
-const mapHolidayDataToTable = (settings, setSettings) => {
+const mapWeeklyHolidayDataToTable = (settings, setSettings) => {
   const weeklyHolidays = settings.holidays.weekly;
   const daysOfTheWeek = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
   return daysOfTheWeek.map((dayofTheWeek) => {
@@ -43,8 +46,24 @@ const mapHolidayDataToTable = (settings, setSettings) => {
   });
 };
 
+const mapHolidaysToTable = (holidays) => {
+  return holidays?.map((holiday) => ({
+    holiday_name: capitaliseFirstLetterCase(holiday.holiday_name),
+    date: moment(holiday.date).format("dddd, MMMM Do YYYY"),
+  }));
+};
+
 const HolidaysSection = (props) => {
   const { settings, setSettings, isLoading } = props;
+  const [holidays, setHolidays] = useState();
+  const [isHolidaysLoading, setHolidaysLoading] = useState(true);
+
+  useEffect(() => {
+    invoke("getHolidays").then((data) => {
+      setHolidays(data);
+      setHolidaysLoading(false);
+    });
+  }, []);
 
   const weeklyHolidayColumns = [
     {
@@ -58,8 +77,20 @@ const HolidaysSection = (props) => {
       width: 100,
     },
   ];
+  const holidaysColumns = [
+    {
+      title: "Holiday Name",
+      accessorKey: "holiday_name",
+      width: 400,
+    },
+    {
+      title: "Date",
+      accessorKey: "date",
+      width: 500,
+    },
+  ];
   const weeklyData = settings
-    ? mapHolidayDataToTable(settings, setSettings)
+    ? mapWeeklyHolidayDataToTable(settings, setSettings)
     : undefined;
   return (
     <>
@@ -70,8 +101,14 @@ const HolidaysSection = (props) => {
         buttonComponent={<ActionsContent />}
       />
       <div className="d-flex" style={{ width: "100%" }}>
-        <div className="col-6"></div>
-        <div className="col-6">
+        <div className="col-6 me-4">
+          <Table
+            columns={holidaysColumns}
+            data={mapHolidaysToTable(holidays)}
+            loading={isHolidaysLoading}
+          />
+        </div>
+        <div className="col-5">
           <Table
             columns={weeklyHolidayColumns}
             data={weeklyData}
