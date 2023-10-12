@@ -178,6 +178,15 @@ resolver.define("getAiIssueLocator", async (req) => {
   return storageData;
 });
 
+resolver.define("getHolidays", async (req) => {
+  const storageData = await storage.get(STORAGE_HOLIDAYS_KEY);
+  if (storageData === undefined) {
+    await storage.set(STORAGE_HOLIDAYS_KEY, []);
+    return [];
+  }
+  return storageData;
+});
+
 resolver.define("setHolidays", async (req) => {
   // set in diff storage key
   const storageData = ensureArray(await storage.get(STORAGE_HOLIDAYS_KEY));
@@ -190,14 +199,12 @@ resolver.define("setHolidays", async (req) => {
   return holidayObj;
 });
 
-resolver.define("getHolidays", async (req) => {
-  const storageData = await storage.get(STORAGE_HOLIDAYS_KEY);
-  if (storageData === undefined) {
-    await storage.set(STORAGE_HOLIDAYS_KEY, []);
-    return [];
-  }
-  return storageData;
+resolver.define("deleteHolidays", async () => {
+  await storage.delete(STORAGE_HOLIDAYS_KEY);
+  return true;
 });
+
+
 
 resolver.define("getUsers", async (req) => {
   let users = await utils.getUsers();

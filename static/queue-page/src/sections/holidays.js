@@ -16,7 +16,7 @@ const ActionsContent = (props) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const deleteAllHolidays = () => {
     setIsDeleting(true)
-    invoke("setStorage", { key: "holidays", value: undefined }).then(() => {
+    invoke("deleteHolidays").then(() => {
       setIsDeleting(false);
       refreshHolidays();
     });
