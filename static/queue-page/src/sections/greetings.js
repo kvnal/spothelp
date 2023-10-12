@@ -1,7 +1,7 @@
 import React from "react";
-import SectionTitle from "../parts/section-title/section-title";
+import SectionTitle from "../components/section-title";
 import Toggle from "@atlaskit/toggle";
-import InputLabelWrapper from "../parts/input-label/inputLabel";
+import InputLabelWrapper from "../components/inputLabel";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 

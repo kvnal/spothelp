@@ -1,17 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { invoke } from "@forge/bridge";
-import InputLabelWrapper from "../parts/input-label/inputLabel";
-import SectionTitle from "../parts/section-title/section-title";
+import InputLabelWrapper from "../components/inputLabel";
+import SectionTitle from "../components/section-title";
 import Toggle from "@atlaskit/toggle";
 import ButtonGroup from "@atlaskit/button/button-group";
 import Button from "@atlaskit/button/standard-button";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import Table from "../parts/table/table";
+import Table from "../components/table";
 import { capitaliseFirstLetterCase } from "../helpers";
+import Modal, { ModalTransition } from "@atlaskit/modal-dialog";
+import IssueModal from "../components/modals/issue-modal";
+import { ensureArray } from "../helpers";
 
 const maptoIssuesTable = (data) => {
-  return data?.map((item) => ({
+  if(!data || ensureArray(data).length === 0) return;
+  return ensureArray(data)?.map((item) => ({
     teamName: capitaliseFirstLetterCase(item.team_name),
     assigneeName: item.assignee.displayName,
     jiraProject: item.jira.location.projectKey,
@@ -19,16 +23,24 @@ const maptoIssuesTable = (data) => {
   }));
 };
 
-const IssueActionsContent = () => (
-  <ButtonGroup>
-    <Button appearance="primary">Link Jira Project</Button>
-  </ButtonGroup>
-);
+const IssueActionsContent = (props) => {
+  const { handleOpen } = props;
+  return (
+    <ButtonGroup>
+      <Button appearance="primary" onClick={handleOpen}>
+        Link Jira Project
+      </Button>
+    </ButtonGroup>
+  );
+};
 
 const IssueLocatorSection = (props) => {
   const { settings, setSettings, isLoading } = props;
   const [locatorData, setLocatorData] = useState();
   const [islocatorLoading, setLocatorLoading] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
+  const handleClose = useCallback(() => setIsOpen(false), []);
+  const handleOpen = useCallback(() => setIsOpen(true), []);
 
   useEffect(() => {
     invoke("getAiIssueLocator").then((data) => {
@@ -87,7 +99,7 @@ const IssueLocatorSection = (props) => {
       <SectionTitle
         title={"Issue Locator"}
         subTitle={`Configure your teams here, for our A.I. to forward customer issues automatically.`}
-        buttonComponent={<IssueActionsContent />}
+        buttonComponent={<IssueActionsContent handleOpen={handleOpen} />}
       />
       <div className="d-flex mb-4" style={{ width: "100%" }}>
         <Table
@@ -97,6 +109,13 @@ const IssueLocatorSection = (props) => {
         />
       </div>
       {isLoading ? stillLoading : contentLoaded}
+      <ModalTransition>
+        {isOpen && (
+          <Modal onClose={handleClose}>
+            <IssueModal closeModal={handleClose} />
+          </Modal>
+        )}
+      </ModalTransition>
     </>
   );
 };

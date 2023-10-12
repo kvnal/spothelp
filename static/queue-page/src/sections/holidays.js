@@ -1,19 +1,38 @@
 import ButtonGroup from "@atlaskit/button/button-group";
-import Button from "@atlaskit/button/standard-button";
-import React, { useEffect, useState } from "react";
+import { LoadingButton } from "@atlaskit/button";
+import React, { useEffect, useState, useCallback } from "react";
 import { invoke } from "@forge/bridge";
-import SectionTitle from "../parts/section-title/section-title";
+import SectionTitle from "../components/section-title";
 import Toggle from "@atlaskit/toggle";
-import Table from "../parts/table/table";
+import Table from "../components/table";
 import { capitaliseFirstLetterCase } from "../helpers";
+import HolidayModal from "../components/modals/holiday-modal";
+import Modal, { ModalTransition } from "@atlaskit/modal-dialog";
+import { ensureArray } from "../helpers";
 import moment from "moment";
 
-const ActionsContent = () => (
-  <ButtonGroup>
-    <Button appearance="primary">Add holiday</Button>
-    <Button>Revoke all holidays</Button>
-  </ButtonGroup>
-);
+const ActionsContent = (props) => {
+  const { handleModalOpen, refreshHolidays } = props;
+  const [isDeleting, setIsDeleting] = useState(false);
+  const deleteAllHolidays = () => {
+    setIsDeleting(true)
+    invoke("setStorage", { key: "holidays", value: undefined }).then(() => {
+      setIsDeleting(false);
+      refreshHolidays();
+    });
+  };
+
+  return (
+    <ButtonGroup>
+      <LoadingButton appearance="primary" onClick={handleModalOpen}>
+        Add holiday
+      </LoadingButton>
+      <LoadingButton onClick={deleteAllHolidays} isLoading={isDeleting}>
+        Revoke all holidays
+      </LoadingButton>
+    </ButtonGroup>
+  );
+};
 
 const mapWeeklyHolidayDataToTable = (settings, setSettings) => {
   const weeklyHolidays = settings.holidays.weekly;
@@ -47,7 +66,8 @@ const mapWeeklyHolidayDataToTable = (settings, setSettings) => {
 };
 
 const mapHolidaysToTable = (holidays) => {
-  return holidays?.map((holiday) => ({
+  if (!holidays || ensureArray(holidays).length === 0) return;
+  return ensureArray(holidays).map((holiday) => ({
     holiday_name: capitaliseFirstLetterCase(holiday.holiday_name),
     date: moment(holiday.date).format("dddd, MMMM Do YYYY"),
   }));
@@ -57,6 +77,13 @@ const HolidaysSection = (props) => {
   const { settings, setSettings, isLoading } = props;
   const [holidays, setHolidays] = useState();
   const [isHolidaysLoading, setHolidaysLoading] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleClose = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
+  const handleOpen = useCallback(() => setIsOpen(true), []);
 
   useEffect(() => {
     invoke("getHolidays").then((data) => {
@@ -64,6 +91,14 @@ const HolidaysSection = (props) => {
       setHolidaysLoading(false);
     });
   }, []);
+
+  const refreshHolidays = () => {
+    setHolidaysLoading(true);
+    invoke("getHolidays").then((data) => {
+      setHolidays(data);
+      setHolidaysLoading(false);
+    });
+  };
 
   const weeklyHolidayColumns = [
     {
@@ -98,24 +133,39 @@ const HolidaysSection = (props) => {
         title={"Holidays"}
         subTitle={`A list of holidays which will trigger a sweet A.I. generated message for
         your customers.`}
-        buttonComponent={<ActionsContent />}
+        buttonComponent={
+          <ActionsContent
+            handleModalOpen={handleOpen}
+            refreshHolidays={refreshHolidays}
+          />
+        }
       />
       <div className="d-flex" style={{ width: "100%" }}>
-        <div className="col-6 me-4">
-          <Table
-            columns={holidaysColumns}
-            data={mapHolidaysToTable(holidays)}
-            loading={isHolidaysLoading}
-          />
-        </div>
-        <div className="col-5">
+        <div className="col-5 me-4">
           <Table
             columns={weeklyHolidayColumns}
             data={weeklyData}
             loading={isLoading}
           />
         </div>
+        <div className="col-6">
+          <Table
+            columns={holidaysColumns}
+            data={mapHolidaysToTable(holidays)}
+            loading={isHolidaysLoading}
+          />
+        </div>
       </div>
+      <ModalTransition>
+        {isOpen && (
+          <Modal onClose={handleClose}>
+            <HolidayModal
+              handleClose={handleClose}
+              refreshHolidays={refreshHolidays}
+            />
+          </Modal>
+        )}
+      </ModalTransition>
     </>
   );
 };

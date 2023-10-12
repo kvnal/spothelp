@@ -34,6 +34,9 @@ const DEFAULT_SETTING_CONFIG = {
 };
 
 function ensureArray  (arr)  {
+  if(arr === ""){
+    return [];
+  }
   return Array.isArray(arr) ? arr : [arr];
 };
 // event trigger
@@ -174,6 +177,7 @@ resolver.define("setHolidays", async (req) => {
   let date_ = new Date(holidayObj["date"]);
   holidayObj["date_code"] = date_.toLocaleDateString("en-US");
   await storageData.push(holidayObj);
+  await storage.set(STORAGE_HOLIDAYS_KEY, storageData);
   return holidayObj;
 });
 
