@@ -13,15 +13,23 @@ const Devtools = () => {
     return 1;
   };
 
+
   const getStorage = () => {
-    invoke("getStorage", { key: inputvalue }).then((result) => {
+    invoke("devInvoke", { key: inputvalue, func : "get" }).then((result) => {
       console.log(result);
       setdata(result);
     });
   };
 
   const setStorage = () => {
-    invoke("setStorage", { key: inputvalue, value: data?.data }).then((result) => {
+    invoke("devInvoke", { key: inputvalue, func : "set", value: data }).then((result) => {
+      console.log(result);
+      setdata(result);
+    });
+  };
+
+  const delStorage = () => {
+    invoke("devInvoke", { key: inputvalue, func : "del" }).then((result) => {
       console.log(result);
       setdata(result);
     });
@@ -29,6 +37,12 @@ const Devtools = () => {
 
   const invokeResolver = () => {
     invoke(inputvalue, { key: null }).then((result) => {
+      setdata(result);
+    });
+  };
+
+  const devInvoke = () => {
+    invoke("devInvoke", { key: null, func:"other" }).then((result) => {
       setdata(result);
     });
   };
@@ -50,6 +64,7 @@ const Devtools = () => {
                 theme={"pop"}
                 collapsed={1}
                 onEdit={onEdit}
+                onAdd = {onEdit}
               />
             </div>
 
@@ -61,8 +76,10 @@ const Devtools = () => {
               />
               {/* <input type="text" placeholder="getStorage" /> */}
               <button onClick={getStorage}>get storage</button>
-              <button onClick={setStorage}>setStorage</button>
+              <button onClick={setStorage}>set Storage</button>
+              <button onClick={delStorage}>del Storage</button>
               <button onClick={invokeResolver}>invoke resolver</button>
+              <button onClick={devInvoke}>devInvoke other</button>
             </div>
           </div>
         </div>
