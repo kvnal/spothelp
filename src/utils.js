@@ -162,6 +162,21 @@ class Utils {
 
   // START([\s\S]*)END
 
+  getTextBetweenStartEnd = (text) =>{
+    let pattern = /START([\s\S]*)END/g;
+    let plainText = text.match(pattern)
+    
+    if(plainText){
+      plainText = plainText[0]
+      plainText = plainText.replace("START","")
+      plainText = plainText.replace("END","")
+      plainText = plainText.trim();
+      
+      return plainText;
+    }
+    console.log(`START END GPT issue > ${text}`);
+    return text;
+  }
 
   ///////////
 

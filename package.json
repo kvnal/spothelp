@@ -12,6 +12,7 @@
     "forge:install": "npm run forge:install_jira && npm run forge:install_confluence",
     "bd": "cd static/queue-page && rmdir /s build && npm run build && cd ../../ && forge deploy",
     "dt": "forge deploy && forge tunnel",
+    "di": "forge deploy -e development && forge install -p Jira --upgrade",
     "nodemon": "nodemon src/llama.js"
   },
   "devDependencies": {

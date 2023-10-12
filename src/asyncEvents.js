@@ -27,11 +27,13 @@ asyncResolver.define("job-event-listener1", async (queueItem) => {
 
   let ai_response = null;
   if(utils.USE_MOCK_AI){
-      ai_response = `this is tokenized text > \n${confluencePageBody['raw']} `
+      ai_response = `START\n this is tokenized text > \n${confluencePageBody['raw']} \nEND`
   }else{
     // openai api get key in openai utils
   }
 
+  // startend
+  ai_response = utils.getTextBetweenStartEnd(ai_response);
   console.log(`job-1 : token count - ${encode(ai_response).length}`)
   
   let storageDataArrTokenize = await storage.get(utils.STORAGE_TOKENIZED_CONFLUENCE_BODY);
@@ -39,7 +41,6 @@ asyncResolver.define("job-event-listener1", async (queueItem) => {
   dataToset['confluence_token'] = ai_response;
   storageDataArrTokenize.push(dataToset);
   
-  console.log(`storageData job1 >> ${JSON.stringify(storageDataArrTokenize)}`);
   await storage.set(utils.STORAGE_TOKENIZED_CONFLUENCE_BODY, storageDataArrTokenize);
 
   return 1;
@@ -86,13 +87,16 @@ asyncResolver.define("job-event-listener2", async (queueItem) => {
 
   let ai_response = null;
   if(commentPrompt){
+    console.log(`commentPrompt > ${commentPrompt}`);
     if(utils.USE_MOCK_AI){
-      ai_response = "this is ai generated text response by chatGPT."
+      ai_response = "asdf START\nthis is ai generated text response by chatGPT. regex \nEND"
     }
     else{
       // openai
     }
 
+    // startend regex
+    ai_response = utils.getTextBetweenStartEnd(ai_response);
     let commentResponse = await utils.createIssueComment(issueDetails['issue']['key'],ai_response)
     
     return 1;
