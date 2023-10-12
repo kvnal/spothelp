@@ -48,13 +48,62 @@ asyncResolver.define("job-event-listener1", async (queueItem) => {
 
 asyncResolver.define("job-event-listener2", async (queueItem) => {
   console.log("asyncResovler working.. job2")
-  // check holiday + comment
-  return 1;
+  let issueDetails = queueItem.payload.value;
+
+  let days = ['sun','mon','tue','wed','thr', 'fri','sat']
+  
+  let utils = new Utils();
+  // check holiday ocasional + weekly + comment
+  let settingConfig = await storage.get(utils.STORAGE_SETTINGS_KEY);
+  let ocasionHoliday = await storage.get(utils.STORAGE_HOLIDAYS_KEY);
+
+  let settingHolidayWeekly = settingConfig['holidays']['weekly'];
+  
+  let todayDate = new Date();
+  let todayDateCode = todayDate.toLocaleDateString("en-US");
+  let todayDay = days[todayDate.getDay()]
+
+  let commentPrompt = null;
+
+  if(ocasionHoliday.length){
+    for(let i = 0 ; i<ocasionHoliday.length; i++){
+      if(ocasionHoliday[i]['date']==todayDateCode){
+        // get prompt
+        
+        console.log(`today's ocasion holiday ${ocasionHoliday[i]['holiday_name']}`);
+        break;
+      }
+    }
+  }
+  else if(settingHolidayWeekly[todayDay]){
+    // weekly holiday
+    console.log(`today's weekly holiday ${settingHolidayWeekly[todayDay]}`);
+    // get prompt
+  }
+  else{
+    commentPrompt=utils.getJiraCommentPrompt(issueDetails);
+  }
+
+  let ai_response = null;
+  if(commentPrompt){
+    if(utils.USE_MOCK_AI){
+      ai_response = "this is ai generated text response by chatGPT."
+    }
+    else{
+      // openai
+    }
+
+    let commentResponse = await utils.createIssueComment(issueDetails['issue']['key'],ai_response)
+    
+    return 1;
+  }
+  return 0;
   
 });
 
 asyncResolver.define("job-event-listener3", async (queueItem) => {
   console.log("asyncResovler working.. job3")
+  // check if jiraboards empty
   return 1;
   
 });

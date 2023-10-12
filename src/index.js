@@ -37,11 +37,10 @@ const DEFAULT_SETTING_CONFIG = {
 // event trigger
 export async function run(event, context) {
   console.log("oncreate event triggered " + JSON.stringify(context));
-  // console.log("oncreate event triggered " + JSON.stringify(event));  
-
+  console.log("event : IssueCreate " + JSON.stringify(event));
   // job2 - check holiday + detect language + generate greetings > comment
   // job3 - get storage + generate prompt + count token + ai locate bug to team > perform action.
-
+  
   // check holiday occasional from storage
   // check holiday weekly from setting
   // check if issue is bug (get issue details?)
@@ -102,7 +101,7 @@ resolver.define("getConfluenceWikis", async (req) => {
   // let response = (await api.asApp().requestConfluence(route`/wiki/rest/api/content/`)).json();
   let response = await api.asUser().requestConfluence(route`/wiki/rest/api/content`);
 
-
+   
   return await response.json();
   return { msg: "response" };
 });
