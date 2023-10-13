@@ -60,7 +60,7 @@ asyncResolver.define("job-event-listener2", async (queueItem) => {
 
   let settingHolidayWeekly = settingConfig['holidays']['weekly'];
   
-  let todayDate = new Date();
+  let todayDate = new Date(issueDetails['issue']['fields']['created']);
   let todayDateCode = todayDate.toLocaleDateString("en-US");
   let todayDay = days[todayDate.getDay()]
 
@@ -107,7 +107,65 @@ asyncResolver.define("job-event-listener2", async (queueItem) => {
 
 asyncResolver.define("job-event-listener3", async (queueItem) => {
   console.log("asyncResovler working.. job3")
+  let issueDetails = queueItem.payload.value;
   // check if jiraboards empty
+  let utils = new Utils();
+  let jiraboards = await storage.get(utils.STORAGE_TOKENIZED_CONFLUENCE_BODY);
+  
+  if(jiraboards && issueDetails){
+    let issueDescription = await utils.getJiraIssueBodyDescription(issueDetails['issue']['key'])
+
+    let issueSummaryDescObj = {
+      summary : issueDetails['issue']['fields']['summary'],
+      description : issueDescription
+    }
+
+    let bugPrompt = utils.getBugTeamPrompt(issueSummaryDescObj, jiraboards);
+
+    
+    if(bugPrompt){
+      let ai_response = null;
+      
+      if(utils.USE_MOCK_AI){
+        ai_response = `team name is \nSTART\n${jiraboards[0]['team_name']}\nEND`;
+        
+      }
+      else{
+        // open ai
+        // token count
+      }
+      
+      let teamName = utils.getTextBetweenStartEnd(ai_response);
+      console.log(`teamname > ${teamName}`);
+      
+      let teamNameData = jiraboards.filter(e=> e['team_name']==teamName);
+      if(teamNameData){
+        let newJiraIssue = await utils.createJiraIssue(issueDetails,teamNameData[0]['jira']['location']['projectId'],teamNameData[0]['assignee']['accountId']);
+
+        
+        if(newJiraIssue && "key" in newJiraIssue){
+            let jiraLink = await utils.createJiraIssueLink(issueDetails['issue']['key'],newJiraIssue['key'])
+
+            if(jiraLink && "msg" in jiraLink && jiraLink['msg']=="linked"){
+                console.log(`issueLinked ${issueDetails['issue']['key']} ${newJiraIssue['key']}`)
+                
+                return 1;
+            }else{
+              console.log("error : issue not linked")
+            }
+        }
+        else{
+          console.log(`error :newJiraIssue not created ${JSON.stringify(newJiraIssue)}`)
+        }
+      }
+      
+    }
+
+  }else{
+    console.log(`job3 no jiraboards added : ${jiraboards} or no issueDetails`)
+  }
+
+
   return 1;
   
 });

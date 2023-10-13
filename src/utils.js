@@ -56,6 +56,7 @@ class Utils {
       body: JSON.stringify(newJiraIssue)
     });
 
+    
     let newlyCreatedJiraIssue = await response.json();
     return newlyCreatedJiraIssue;
   };
@@ -104,10 +105,10 @@ class Utils {
     }
   };
 
-  getJiraIssueBodyDescription = async (event) =>{
+  getJiraIssueBodyDescription = async (key) =>{
     // ?expand=renderedFields
     let response = await api.asApp().requestJira(
-      route`/rest/api/3/issue/${event.issue.id}?expand=renderedFields`
+      route`/rest/api/3/issue/${key}?expand=renderedFields`
     );
     if (response.statusText = "OK") {
       response = await response.json();
@@ -128,14 +129,27 @@ class Utils {
     return new Promise(resolve => setTimeout(resolve, delayInms));
   };
 
-  getBugTeamPrompt = () => {
-    let teamCount = 0;
-    let bugTitleDescription = null;
-    let heading = `there is an organization with ${teamCount} below listed team in technical side.`;
+  getBugTeamPrompt = (issueSummaryDescObj,tokenized_storage_data) => {
+    let prompt = null;
 
-    let bugText = `now suppose their is a bug with given description: ${bugTitleDescription} \nNow guess which team from the above organization should take the responsibility of this bug. answer without explanation. start and ends team name with text "START" and "END".`;
+    if(tokenized_storage_data){
+      let teamCount = tokenized_storage_data.length;
+
+      let heading = `there is an organization with ${teamCount} below listed team in technical side.`;
+      
+      let bugText = `now suppose their is a bug with given description: "Title: ${issueSummaryDescObj
+      ['summary']}. Description: ${issueSummaryDescObj['description']}" \nNow guess which team from the above organization should take the responsibility of this bug. answer without explanation. start and ends team name with text "START" and "END".`;
+        
+      let teamDescriptionText = "";
+      for(let i = 0; i<tokenized_storage_data.length; i++){
+        teamDescriptionText += `${i+1}. ${tokenized_storage_data[i]['team_name']}: ${tokenized_storage_data[i]['confluence_token']}\n`
+      }
 
 
+      prompt = `${heading}\n${teamDescriptionText}\n${bugText}`;
+      return prompt;
+    }
+    return prompt
   };
 
   getJiraCommentPrompt = (event, type = "default") => {

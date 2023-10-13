@@ -38,6 +38,10 @@ const DEFAULT_SETTING_CONFIG = {
 export async function run(event, context) {
   console.log("oncreate event triggered " + JSON.stringify(context));
   console.log("event : IssueCreate " + JSON.stringify(event));
+
+  ////////////// 
+  // check if created only at installed jsm.
+  ////
   // job2 - check holiday + detect language + generate greetings > comment
   // job3 - get storage + generate prompt + count token + ai locate bug to team > perform action.
   
@@ -148,8 +152,11 @@ resolver.define("devInvoke", async (req) => {
       },
       "contextToken": "P7sc2D9DB8DvvKdhM5TpfGVeuFzTAQTtsBriY-BTuPxEwQe3WtZlmseLro8M7FemA3mi5OpFusSzakcckZMvDxEiRu1rDtbBsjDWXFeK4kixsdL9CiSlOEKwBux3I-38Oto09gaG_BawknKWUJzj_Q"
   }
-    let job2 = await testQueue2.push({value: issue})
-    let jobProgress = await (await testQueue2.getJob(job2).getStats()).json()
+    // let job2 = await testQueue2.push({value: issue})
+    // let jobProgress = await (await testQueue2.getJob(job2).getStats()).json()
+
+    let job2 = await testQueue3.push({value: issue})
+    let jobProgress = await (await testQueue3.getJob(job2).getStats()).json()
 
     return {msg:"ok", job : jobProgress};
   }
@@ -235,11 +242,11 @@ resolver.define("getAiIssueLocator", async (req) => {
 
 resolver.define("setHolidays", async (req) => {
   // set in diff storage key
+  
+  // return {con: req.context, pay : req.payload, req:req}
   const storageData = await storage.get(STORAGE_HOLIDAYS_KEY);
   let holidayObj = req.payload.value;
-
-  let date_ = new Date(holidayObj['date']);
-  holidayObj['date_code'] = date_.toLocaleDateString("en-US");
+ 
   await storageData.push(holidayObj);
 
   return holidayObj;
@@ -254,7 +261,7 @@ resolver.define("getHolidays", async (req) => {
   return storageData;
 });
 
-resolver.define("getUsers", async (req) => {
+resolver.define("getUsers", async (req ) => {
   let users = await utils.getUsers();
   return users;
 });
