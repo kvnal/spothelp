@@ -143,7 +143,9 @@ resolver.define("getConfluenceWikis", async (req) => {
 });
 
 resolver.define("setSettings", async (req) => {
-  // set and check for confluence page change along with
+  let dataToset = req.payload.value;
+  await storage.set(STORAGE_SETTINGS_KEY, dataToset);
+  return 1;
 });
 
 resolver.define("getSettings", async (req) => {

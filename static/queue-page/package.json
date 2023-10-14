@@ -11,6 +11,7 @@
     "@atlaskit/page-header": "^10.4.4",
     "@atlaskit/select": "^16.7.2",
     "@atlaskit/table-tree": "^9.6.4",
+    "@atlaskit/tabs": "^13.4.9",
     "@atlaskit/textfield": "^5.6.8",
     "@atlaskit/toggle": "^12.6.11",
     "@forge/bridge": "^2.6.0",

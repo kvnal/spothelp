@@ -128,7 +128,7 @@ const HolidaysSection = (props) => {
     ? mapWeeklyHolidayDataToTable(settings, setSettings)
     : undefined;
   return (
-    <>
+    <div>
       <SectionTitle
         title={"Holidays"}
         subTitle={`A list of holidays which will trigger a sweet A.I. generated message for
@@ -166,7 +166,7 @@ const HolidaysSection = (props) => {
           </Modal>
         )}
       </ModalTransition>
-    </>
+    </div>
   );
 };
 

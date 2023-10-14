@@ -115,7 +115,7 @@ const IssueLocatorSection = (props) => {
   );
   const stillLoading = <Skeleton width={"50%"} />;
   return (
-    <>
+    <div>
       <SectionTitle
         title={"Issue Locator"}
         subTitle={`Configure your teams here, for our A.I. to forward customer issues automatically.`}
@@ -144,7 +144,7 @@ const IssueLocatorSection = (props) => {
           </Modal>
         )}
       </ModalTransition>
-    </>
+    </div>
   );
 };
 

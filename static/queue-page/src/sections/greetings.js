@@ -59,13 +59,13 @@ const GreetingsSection = (props) => {
     </>
   );
   return (
-    <>
+    <div>
       <SectionTitle
         title={"A.I. Greetings"}
         subTitle={`Our A.I. is designed to greet customers on issue creation and can even greet them in their preferred language, thanks to its language capabilities. Toggle to turn this feature on`}
       />
       {isLoading ? stillLoading : contentLoaded}
-    </>
+    </div>
   );
 };
 
