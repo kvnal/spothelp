@@ -32,3 +32,8 @@
     transform: rotate(360deg);
   }
 }
+
+.sub-option{
+  font-size: 0.7em;
+  color: #9c9c9c;
+}

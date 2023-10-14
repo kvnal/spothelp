@@ -13,7 +13,7 @@ const DEFAULT_SETTING_CONFIG = {
   which_data: "setting-config",
   auto_ticket_locator: {
     auto_translate_english: true,
-    jira_boards: "get from api 'getAiIssueLocator'"
+    jira_boards: "get from api 'getAiIssueLocator'",
   },
   holidays: {
     occasional: "get from api 'getHolidays'",
@@ -24,19 +24,28 @@ const DEFAULT_SETTING_CONFIG = {
       thr: false,
       fri: false,
       sat: false,
-      sun: false
-    }
+      sun: false,
+    },
   },
   ai_greetings_message: {
     ai_greetings_on_issue_create: true,
-    greet_in_local_language: true
-  }
+    greet_in_local_language: true,
+  },
 };
 
-
+function ensureArray  (arr)  {
+  if(arr === ""){
+    return [];
+  }
+  return Array.isArray(arr) ? arr : [arr];
+};
 // event trigger
 export async function run(event, context) {
+  console.log("oncreate event triggered " + JSON.stringify(context));
+  // console.log("oncreate event triggered " + JSON.stringify(event));
+
   console.log("event : IssueCreate " + JSON.stringify(event));
+
 
   // check issue type??
   // check if issue is bug (get issue details?)
@@ -51,7 +60,6 @@ export async function run(event, context) {
   }
   }
 // end
-
 
 const resolver = new Resolver();
 const utils = new Utils();
@@ -161,24 +169,26 @@ resolver.define("devInvoke", async (req) => {
 });
 //  devTools end
 
-
 resolver.define("getJiraBoards", async (req) => {
-  let response = (await api.asApp().requestJira(route`/rest/agile/1.0/board`)).json();
+  let response = (
+    await api.asApp().requestJira(route`/rest/agile/1.0/board`)
+  ).json();
 
   return response;
 });
 
 resolver.define("getConfluenceWikis", async (req) => {
-  // let response = (await api.asApp().requestConfluence(route`/wiki/rest/api/content/`)).json();
+
   let response = await api.asUser().requestConfluence(route`/wiki/rest/api/content`);
 
-   
   return await response.json();
   return { msg: "response" };
 });
 
 resolver.define("setSettings", async (req) => {
-  // set and check for confluence page change along with
+  let dataToset = req.payload.value;
+  await storage.set(STORAGE_SETTINGS_KEY, dataToset);
+  return 1;
 });
 
 resolver.define("getSettings", async (req) => {
@@ -225,8 +235,6 @@ resolver.define("setAiIssueLocator", async (req) => {
 
 });
 
-
-
 resolver.define("getAiIssueLocator", async (req) => {
   const storageData = await storage.get(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY);
   if (storageData === undefined) {
@@ -237,6 +245,11 @@ resolver.define("getAiIssueLocator", async (req) => {
   return storageData;
 });
 
+
+resolver.define("deleteAiIssueLocator", async () => {
+  await storage.delete(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY);
+  return true;
+}
 resolver.define("setHolidays", async (req) => {
   // set in diff storage key
   
@@ -260,27 +273,46 @@ resolver.define("getHolidays", async (req) => {
   return storageData;
 });
 
-resolver.define("getUsers", async (req ) => {
+
+resolver.define("setHolidays", async (req) => {
+  // set in diff storage key
+  const storageData = ensureArray(await storage.get(STORAGE_HOLIDAYS_KEY));
+  let holidayObj = req.payload.value;
+
+  let date_ = new Date(holidayObj["date"]);
+  holidayObj["date_code"] = date_.toLocaleDateString("en-US");
+  await storageData.push(holidayObj);
+  await storage.set(STORAGE_HOLIDAYS_KEY, storageData);
+  return holidayObj;
+});
+
+resolver.define("deleteHolidays", async () => {
+  await storage.delete(STORAGE_HOLIDAYS_KEY);
+  return true;
+});
+
+resolver.define("getUsers", async (req) => {
   let users = await utils.getUsers();
   return users;
 });
 
 resolver.define("createConfluenceTeamTemplate", async (req) => {
   let bodyData = utils.DEFAULT_CONFLUENCE_TEAM_DESC_TEMPLATE;
-  let response = await api.asUser().requestConfluence(route`/wiki/rest/api/content`,
-    {
-      method: 'POST',
+  let response = await api
+    .asUser()
+    .requestConfluence(route`/wiki/rest/api/content`, {
+      method: "POST",
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(bodyData)
-    }
-  );
+      body: JSON.stringify(bodyData),
+    });
 
   return await response.json();
   return { msg: "response" };
 });
+
 
 resolver.define("setOpenAi",async (req)=>{
   await storage.setSecret(utils.STORAGE_OPENAI_KEY,req.payload.value);
@@ -295,7 +327,6 @@ resolver.define("checkOpenAi",async (req)=>{
   }
   return {exists : false}
 })
-
 
 
 

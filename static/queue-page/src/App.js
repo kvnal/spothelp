@@ -2,78 +2,88 @@ import "./App.css";
 // Need it to invoke API
 // import { invoke } from "@forge/bridge";
 import Devtools from "./dev/Devtools";
-import HolidaysSection from "./holidays-section/holidays";
-import { useEffect, useState } from "react";
+import HolidaysSection from "./sections/holidays";
+import React, { useEffect, useState, useCallback } from "react";
 import { invoke } from "@forge/bridge";
-import GreetingsSection from "./greetings-setion/greetings";
-import IssueLocatorSection from "./issue-locator-section/issueLocatorSection";
+import GreetingsSection from "./sections/greetings";
+import IssueLocatorSection from "./sections/issueLocatorSection";
+import Tabs, { Tab, TabList, TabPanel } from "@atlaskit/tabs";
+import { LoadingButton } from "@atlaskit/button";
 
-function App() {
-  // Invoke API like this
-  // const test = () => {
-  //   invoke('test', { msg: "hello from the other side" }).then((data) => { console.log(`Data > ${data}`); });
-  // };
+const App = () => {
   const [settingsData, setSettingsData] = useState();
-
   const [isLoading, setLoading] = useState(true);
+  const [isSettingsLoading, setSettingsLoading] = useState(false);
+  const [isFailed, setFailed] = useState(false);
   useEffect(() => {
     invoke("getSettings").then((data) => {
       setSettingsData(data);
       setLoading(false);
     });
   }, []);
-  console.log(settingsData);
-  // const columns = [
-  //   {
-  //     title: "Card Title",
-  //     accessorKey: "title",
-  //     width: 200,
-  //   },
-  //   {
-  //     title: "Card Description",
-  //     accessorKey: "description",
-  //     width: 300,
-  //   },
-  // ];
-  // const data = [
-  //   {
-  //     title: "Jira Issue Text",
-  //     description: (
-  //       <div
-  //         style={{ backgroundColor: "green", color: "white" }}
-  //       >{`I'm a custom component`}</div>
-  //     ),
-  //   },
-  //   {
-  //     title: "Jira Issue 2 Text",
-  //     description: "I'm text",
-  //   },
-  //   {
-  //     title: "Jira Issue 3 Text",
-  //     description: "Ab mujhe bhi peer-pressure mein kuch hona padhega kya ?",
-  //   },
-  // ];
+
+  const [selected, setSelected] = useState(0);
+
+  const handleUpdate = useCallback(
+    (index) => setSelected(index),
+    [setSelected]
+  );
 
   return (
     <div className="App">
       <Devtools />
-      <IssueLocatorSection 
-        settings={settingsData}
-        setSettings={setSettingsData}
-        isLoading={isLoading}
-      />
-      <HolidaysSection
-        settings={settingsData}
-        setSettings={setSettingsData}
-        isLoading={isLoading}
-      />
-      <GreetingsSection
-        settings={settingsData}
-        setSettings={setSettingsData}
-        isLoading={isLoading}
-      />
+      <Tabs onChange={handleUpdate} selected={selected}>
+        <TabList>
+          <Tab>Issue Locator</Tab>
+          <Tab>Holidays</Tab>
+          <Tab>A.I. Greetings</Tab>
+        </TabList>
+        <TabPanel>
+          <IssueLocatorSection
+            settings={settingsData}
+            setSettings={setSettingsData}
+            isLoading={isLoading}
+          />
+        </TabPanel>
+        <TabPanel>
+          <HolidaysSection
+            settings={settingsData}
+            setSettings={setSettingsData}
+            isLoading={isLoading}
+          />
+        </TabPanel>
+        <TabPanel>
+          <GreetingsSection
+            settings={settingsData}
+            setSettings={setSettingsData}
+            isLoading={isLoading}
+          />
+        </TabPanel>
+      </Tabs>
+      <div className="d-flex mt-4 justify-content-start">
+        <LoadingButton
+          isLoading={isSettingsLoading}
+          appearance={isFailed ? "danger" : "primary"}
+          className=""
+          onClick={() => {
+            setFailed(false);
+            setSettingsLoading(true);
+            invoke("setSettings", { value: settingsData })
+              .then(() => {
+                setSettingsLoading(false);
+              })
+              .catch(() => {
+                console.error("Unable to set Settings!");
+                setSettingsLoading(false);
+                setFailed(true);
+              });
+          }}
+        >
+          Save
+        </LoadingButton>
+      </div>
     </div>
   );
-}
+};
 
 export default App;

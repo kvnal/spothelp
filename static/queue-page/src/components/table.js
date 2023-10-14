@@ -13,7 +13,7 @@ const Table = (props) => {
 
   const dataLoaded = (
     <>
-      {data ? (
+      {data && data.length > 0 ? (
         data.map((item) => (
           <Row key={item.id}>
             {columns.map((column) => (
