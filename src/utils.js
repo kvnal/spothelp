@@ -6,26 +6,35 @@ class Utils {
 
   USE_MOCK_AI = true;
   MIMIC_TODAYS_DATE_TO = null;
-  
+
   // storage keys
   STORAGE_SETTINGS_KEY = "settings";
   STORAGE_HOLIDAYS_KEY = "holidays";
   STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY = "jiraboards";
-  STORAGE_TOKENIZED_CONFLUENCE_BODY = "jiraboardsTokenize"
-  STORAGE_OPENAI_KEY = "openai"
+  STORAGE_TOKENIZED_CONFLUENCE_BODY = "jiraboardsTokenize";
+  STORAGE_OPENAI_KEY = "openai";
   // 
 
-  getConfluenceBody = async (id) => {
+  
+
+  getConfluenceBody = async (id, asApp = false) => {
     // let response = await api.asUser().requestConfluence(route`/wiki/rest/api/content/${id}?expand=body.dynamic`);
-    let response = await api.asUser().requestConfluence(route`/wiki/rest/api/content/${id}?expand=body.view`);
+    let response = null;
+    if (!asApp) {
+      response = await api.asUser().requestConfluence(route`/wiki/rest/api/content/${id}?expand=body.view`);
+
+    } else {
+      response = await api.asApp().requestConfluence(route`/wiki/rest/api/content/${id}?expand=body.view`);
+    }
+
 
     let pageBody = await response.json();
 
-    let bodyView = pageBody['body']['view']
+    let bodyView = pageBody['body']['view'];
 
-    let plainText = convert(bodyView['value'])
+    let plainText = convert(bodyView['value']);
     // console.log(plainText);/
-    return {raw : plainText, body : bodyView};
+    return { raw: plainText, body: bodyView };
 
   };
 
@@ -36,9 +45,9 @@ class Utils {
     newJiraIssue['fields']['summary'] = eventFields['summary'];
     newJiraIssue['fields']['project']['id'] = jiraProjectId;
     newJiraIssue['fields']['assignee']['id'] = assigneeId;
-    
 
-    const response = await api.asUser().requestJira(route`/rest/api/3/issue`, {
+
+    const response = await api.asApp().requestJira(route`/rest/api/3/issue`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -47,16 +56,17 @@ class Utils {
       body: JSON.stringify(newJiraIssue)
     });
 
+    
     let newlyCreatedJiraIssue = await response.json();
     return newlyCreatedJiraIssue;
   };
 
-  createJiraIssueLink = async (inwardIssueKey, outwardIssueKey) =>{
+  createJiraIssueLink = async (inwardIssueKey, outwardIssueKey) => {
     let bodyData = this.ISSUE_LINK_BODY;
-    bodyData['inwardIssue']['key']=inwardIssueKey
-    bodyData['outwardIssue']['key']=outwardIssueKey
+    bodyData['inwardIssue']['key'] = inwardIssueKey;
+    bodyData['outwardIssue']['key'] = outwardIssueKey;
 
-    const response = await api.asUser().requestJira(route`/rest/api/3/issueLink`, {
+    const response = await api.asApp().requestJira(route`/rest/api/3/issueLink`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -65,14 +75,14 @@ class Utils {
       body: JSON.stringify(bodyData)
     });
 
-    return {msg:"linked"}
-  }
+    return { msg: "linked" };
+  };
 
-  createIssueComment = async (issueKey, commentText) =>{
+  createIssueComment = async (issueKey, commentText) => {
     let bodyData = this.ISSUE_COMMENT_BODY;
-    bodyData['body']['content'][0]['content'][0]['text']=commentText;
+    bodyData['body']['content'][0]['content'][0]['text'] = commentText;
 
-    const response = await api.asUser().requestJira(route`/rest/api/3/issue/${issueKey}/comment`, {
+    const response = await api.asApp().requestJira(route`/rest/api/3/issue/${issueKey}/comment`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -83,7 +93,7 @@ class Utils {
 
     let responseJson = await response.json();
     return responseJson;
-  }
+  };
 
   getUsers = async () => {
     let response = await api.asApp().requestJira(
@@ -95,28 +105,92 @@ class Utils {
     }
   };
 
-  getLlamaTokenizePrompt = (confluenceRawBody) =>{
-    let prompt = `Tokenize the given team description in a way such that their would be sufficient info about the team. so that you would be able to recognize the given the bugs belong to this team. exclude any unnecessary text in the response. start and end tokenized text with text "START" and "END" \n\n ${confluenceRawBody}`
+  getJiraIssueBodyDescription = async (key) =>{
+    // ?expand=renderedFields
+    let response = await api.asApp().requestJira(
+      route`/rest/api/3/issue/${key}?expand=renderedFields`
+    );
+    if (response.statusText = "OK") {
+      response = await response.json();
+      let plaintext = convert(response['renderedFields']['description'])
+      return plaintext;
+    }
+    return 0;
+  }
+
+  getLlamaTokenizePrompt = (confluenceRawBody) => {
+    let prompt = `Tokenize the given team description in a way such that their would be sufficient info about the team. so that you would be able to recognize the given the bugs belong to this team. exclude any unnecessary text in the response. start and end tokenized text with text "START" and "END" \n\n ${confluenceRawBody}`;
 
     return prompt;
 
-  }
+  };
 
   delay = (delayInms) => {
     return new Promise(resolve => setTimeout(resolve, delayInms));
   };
 
-  guessBugTeamPrompt = () =>{
-    let teamCount = 0;
-    let bugTitleDescription = null;
-    let heading = `there is an organization with ${teamCount} below listed team in technical side.`
+  getBugTeamPrompt = (issueSummaryDescObj,tokenized_storage_data) => {
+    let prompt = null;
 
-    let bugText = `now suppose their is a bug with given description: ${bugTitleDescription} \nNow guess which team from the above organization should take the responsibility of this bug. answer without explanation. start and ends team name with text "START" and "END".`
+    if(tokenized_storage_data){
+      let teamCount = tokenized_storage_data.length;
+
+      let heading = `there is an organization with ${teamCount} below listed team in technical side.`;
+      
+      let bugText = `now suppose their is a bug with given description: "Title: ${issueSummaryDescObj
+      ['summary']}. Description: ${issueSummaryDescObj['description']}" \nNow guess which team from the above organization should take the responsibility of this bug. answer without explanation. start and ends team name with text "START" and "END".`;
+        
+      let teamDescriptionText = "";
+      for(let i = 0; i<tokenized_storage_data.length; i++){
+        teamDescriptionText += `${i+1}. ${tokenized_storage_data[i]['team_name']}: ${tokenized_storage_data[i]['confluence_token']}\n`
+      }
 
 
+      prompt = `${heading}\n${teamDescriptionText}\n${bugText}`;
+      return prompt;
+    }
+    return prompt
+  };
+
+  getJiraCommentPrompt = (event, type = "default") => {
+    let detectLanguageFromText = event['issue']['fields']['summary'];
+    let translate = null;
+
+    if(!detectLanguageFromText)
+        return 0;
+    
+
+    if (type == "ocasional") {
+      translate = "<ocasional prompt>"
+    }
+    else if (type == "weekly") {
+      translate = "<weekly prompt>"
+    }
+    else {
+      translate = `Detect language: '${detectLanguageFromText}'. Generate a polite response thanking the customer and assuring prompt assistance in the detected language; if not, use English. feel free to be creative but dont answer the question by yourself and remember to keep it short. start and end response with "START" and "END".`;
+    }
+
+    return translate;
+  };
+
+
+  // START([\s\S]*)END
+
+  getTextBetweenStartEnd = (text) =>{
+    let pattern = /START([\s\S]*)END/g;
+    let plainText = text.match(pattern)
+    
+    if(plainText){
+      plainText = plainText[0]
+      plainText = plainText.replace("START","")
+      plainText = plainText.replace("END","")
+      plainText = plainText.trim();
+      
+      return plainText;
+    }
+    console.log(`START END GPT issue > ${text}`);
+    return text;
   }
-
-  translate = "generate a text greeting  a customer by thanking them for raising query and tell them politely that team is working on it in english. feel free to be more creative in the response. exclude other text and keep it short"
 
   ///////////
 
@@ -125,7 +199,7 @@ class Utils {
   ISSUE_DEFAULT_BODY = {
     "fields": {
       "assignee": {
-        "id":""
+        "id": ""
       },
       "components": [],
       "description": {
@@ -162,18 +236,18 @@ class Utils {
   };
 
   ISSUE_LINK_BODY = {
-  "inwardIssue": {
-    "key": ""
-  },
-  "outwardIssue": {
-    "key": ""
-  },
-  "type": {
-    "name": "Cloners"
-  }
-}
+    "inwardIssue": {
+      "key": ""
+    },
+    "outwardIssue": {
+      "key": ""
+    },
+    "type": {
+      "name": "Cloners"
+    }
+  };
 
-  ISSUE_COMMENT_BODY ={
+  ISSUE_COMMENT_BODY = {
     "body": {
       "content": [
         {
@@ -189,7 +263,7 @@ class Utils {
       "type": "doc",
       "version": 1
     }
-  }
+  };
 
 
   CONFLUENCE_TEAM_DESC_TEMPLATE_BODY = {
@@ -227,9 +301,9 @@ class Utils {
         "representation": "storage"
       }
     }
-  }
-  
-  DEFAULT_CONFLUENCE_TEAM_DESC_TEMPLATE = "<h2>Technical Team Name:<em>Insert name of your technical team here</em></h2><h3>Description:</h3><p>The<strong>insert name of your technical team here</strong>is responsible for<em>briefly describe the main area of focus for this team</em>. They work collaboratively with other teams across the organization to<em>list at least two key stakeholders or teams that this team works closely with</em>. The primary responsibilities of this team include:</p><ul><li><strong>List at least three specific technical tasks or activities that this team handles:</strong><br>Some examples might include things like &quot;designing and implementing new features,&quot; &quot;troubleshooting and resolving technical issues,&quot; or &quot;maintaining and optimizing existing software.&quot;</li></ul><h3>Skills and Expertise:</h3><p>Members of this team have strong proficiency in<em>at least one programming language or technology stack commonly used by this team</em>, as well as knowledge of additional tools and technologies as needed. Some common skills and expertise for this team might include:</p><ul><li>Programming languages:<em>insert list of relevant programming languages or technologies</em></li><li>Frameworks and libraries:<em>insert list of relevant frameworks or libraries</em></li><li>Databases:<em>insert list of relevant databases or data storage solutions</em></li><li>Cloud platforms:<em>insert list of relevant cloud platforms</em></li><li>Security protocols and standards:<em>insert list of relevant security protocols or standards</em></li><li>Other relevant technologies:<em>insert any additional technologies that are commonly used by this team</em></li></ul><p>I hope this helps! Let me know if you have any questions or need further clarification.</p>"
+  };
+
+  DEFAULT_CONFLUENCE_TEAM_DESC_TEMPLATE = "<h2>Technical Team Name:<em>Insert name of your technical team here</em></h2><h3>Description:</h3><p>The<strong>insert name of your technical team here</strong>is responsible for<em>briefly describe the main area of focus for this team</em>. They work collaboratively with other teams across the organization to<em>list at least two key stakeholders or teams that this team works closely with</em>. The primary responsibilities of this team include:</p><ul><li><strong>List at least three specific technical tasks or activities that this team handles:</strong><br>Some examples might include things like &quot;designing and implementing new features,&quot; &quot;troubleshooting and resolving technical issues,&quot; or &quot;maintaining and optimizing existing software.&quot;</li></ul><h3>Skills and Expertise:</h3><p>Members of this team have strong proficiency in<em>at least one programming language or technology stack commonly used by this team</em>, as well as knowledge of additional tools and technologies as needed. Some common skills and expertise for this team might include:</p><ul><li>Programming languages:<em>insert list of relevant programming languages or technologies</em></li><li>Frameworks and libraries:<em>insert list of relevant frameworks or libraries</em></li><li>Databases:<em>insert list of relevant databases or data storage solutions</em></li><li>Cloud platforms:<em>insert list of relevant cloud platforms</em></li><li>Security protocols and standards:<em>insert list of relevant security protocols or standards</em></li><li>Other relevant technologies:<em>insert any additional technologies that are commonly used by this team</em></li></ul><p>I hope this helps! Let me know if you have any questions or need further clarification.</p>";
 
 
 
@@ -304,55 +378,69 @@ class Utils {
 
   MOCK_AI_LOCATOR = {
     "team_name": "team a",
-    "assignee":{},
+    "assignee": {
+      "self": "https://api.atlassian.com/ex/jira/e894bd1b-eba9-4e06-adff-f0985bd90e2f/rest/api/3/user?accountId=70121:1848c046-b89f-4f8f-a22f-846875694d2a",
+      "accountId": "70121:1848c046-b89f-4f8f-a22f-846875694d2a",
+      "accountType": "atlassian",
+      "avatarUrls": {
+        "48x48": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/70121:1848c046-b89f-4f8f-a22f-846875694d2a/19b03f53-cba2-447b-b806-ad7a9c160d36/48",
+        "24x24": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/70121:1848c046-b89f-4f8f-a22f-846875694d2a/19b03f53-cba2-447b-b806-ad7a9c160d36/24",
+        "16x16": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/70121:1848c046-b89f-4f8f-a22f-846875694d2a/19b03f53-cba2-447b-b806-ad7a9c160d36/16",
+        "32x32": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/70121:1848c046-b89f-4f8f-a22f-846875694d2a/19b03f53-cba2-447b-b806-ad7a9c160d36/32"
+      },
+      "displayName": "Kunal Singh",
+      "active": true,
+      "timeZone": "Asia/Kolkata",
+      "locale": "en_US"
+    },
     "jira": {
-        "id": 1,
-        "self": "https://nuvs.atlassian.net/rest/agile/1.0/board/1",
-        "name": "JSC board",
-        "type": "scrum",
-        "location": {
-            "projectId": 10001,
-            "displayName": "jira-scrum-company (JSC)",
-            "projectName": "jira-scrum-company",
-            "projectKey": "JSC",
-            "projectTypeKey": "software",
-            "avatarURI": "https://nuvs.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10422?size=small",
-            "name": "jira-scrum-company (JSC)"
-        }
+      "id": 1,
+      "self": "https://nuvs.atlassian.net/rest/agile/1.0/board/1",
+      "name": "JSC board",
+      "type": "scrum",
+      "location": {
+        "projectId": 10001,
+        "displayName": "jira-scrum-company (JSC)",
+        "projectName": "jira-scrum-company",
+        "projectKey": "JSC",
+        "projectTypeKey": "software",
+        "avatarURI": "https://nuvs.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10422?size=small",
+        "name": "jira-scrum-company (JSC)"
+      }
     },
     "confluence": {
-        "id": "1769492",
-        "type": "page",
-        "status": "current",
-        "title": "Getting started in Confluence",
-        "macroRenderedOutput": {},
-        "extensions": {
-            "position": 604
-        },
-        "_expandable": {
-            "container": "/rest/api/space/~701211848c046b89f4f8fa22f846875694d2a",
-            "metadata": "",
-            "restrictions": "/rest/api/content/33363/restriction/byOperation",
-            "history": "/rest/api/content/33363/history",
-            "body": "",
-            "version": "",
-            "descendants": "/rest/api/content/33363/descendant",
-            "space": "/rest/api/space/~701211848c046b89f4f8fa22f846875694d2a",
-            "childTypes": "",
-            "schedulePublishInfo": "",
-            "operations": "",
-            "schedulePublishDate": "",
-            "children": "/rest/api/content/33363/child",
-            "ancestors": ""
-        },
-        "_links": {
-            "self": "https://nuvs.atlassian.net/wiki/rest/api/content/33363",
-            "tinyui": "/x/U4I",
-            "editui": "/pages/resumedraft.action?draftId=33363",
-            "webui": "/spaces/~701211848c046b89f4f8fa22f846875694d2a/pages/33363/Getting+started+in+Confluence"
-        }
+      "id": "1769492",
+      "type": "page",
+      "status": "current",
+      "title": "Getting started in Confluence",
+      "macroRenderedOutput": {},
+      "extensions": {
+        "position": 604
+      },
+      "_expandable": {
+        "container": "/rest/api/space/~701211848c046b89f4f8fa22f846875694d2a",
+        "metadata": "",
+        "restrictions": "/rest/api/content/33363/restriction/byOperation",
+        "history": "/rest/api/content/33363/history",
+        "body": "",
+        "version": "",
+        "descendants": "/rest/api/content/33363/descendant",
+        "space": "/rest/api/space/~701211848c046b89f4f8fa22f846875694d2a",
+        "childTypes": "",
+        "schedulePublishInfo": "",
+        "operations": "",
+        "schedulePublishDate": "",
+        "children": "/rest/api/content/33363/child",
+        "ancestors": ""
+      },
+      "_links": {
+        "self": "https://nuvs.atlassian.net/wiki/rest/api/content/33363",
+        "tinyui": "/x/U4I",
+        "editui": "/pages/resumedraft.action?draftId=33363",
+        "webui": "/spaces/~701211848c046b89f4f8fa22f846875694d2a/pages/33363/Getting+started+in+Confluence"
+      }
     }
-}
+  };
 }
 
 export default Utils;

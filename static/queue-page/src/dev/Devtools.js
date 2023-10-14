@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./dev.css";
 import ReactJson from "react-json-view";
 import { invoke } from "@forge/bridge";
@@ -8,6 +8,9 @@ const Devtools = () => {
   const [data, setdata] = useState(null);
   const [inputvalue, setInputvalue] = useState("");
 
+  useEffect(()=>{
+    setdata({msg : "refreshed"})
+  },[])
   const onEdit = (e) => {
     setdata(e.updated_src);
     return 1;
@@ -36,7 +39,7 @@ const Devtools = () => {
   };
 
   const invokeResolver = () => {
-    invoke(inputvalue, { key: null }).then((result) => {
+    invoke(inputvalue, { key: null, value : data }).then((result) => {
       setdata(result);
     });
   };

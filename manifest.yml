@@ -66,5 +66,4 @@ permissions:
       - 'https://*.atlassian.net'
     fetch:
       backend:
-        - '*.hf.space'
-        - 'wss://*.hf.space'
+        - https://api.openai.com
