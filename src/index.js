@@ -36,24 +36,20 @@ const DEFAULT_SETTING_CONFIG = {
 
 // event trigger
 export async function run(event, context) {
-  console.log("oncreate event triggered " + JSON.stringify(context));
   console.log("event : IssueCreate " + JSON.stringify(event));
 
-  ////////////// 
-  // check if created only at installed jsm.
-  ////
-  // job2 - check holiday + detect language + generate greetings > comment
-  // job3 - get storage + generate prompt + count token + ai locate bug to team > perform action.
-  
-  // check holiday occasional from storage
-  // check holiday weekly from setting
+  // check issue type??
   // check if issue is bug (get issue details?)
-  // create greet comment + holiday if it is.  do promise parallel calls for language detection > ai comment + issue locator
 
-  // get prompt or get storage call for all confluence body tokenized
-  // get jira board storage
-  // assign ticket 
-}
+  if(event['issue']['project']['projectTypeKey']=="service_desk"){ 
+    console.log("service_desk issue...")
+
+    let job2 = await testQueue2.push({value:event})
+    let job3 = await testQueue3.push({value:event})
+    // check holiday weekly from setting
+    
+  }
+  }
 // end
 
 
@@ -154,7 +150,8 @@ resolver.define("devInvoke", async (req) => {
   }
     // let job2 = await testQueue2.push({value: issue})
     // let jobProgress = await (await testQueue2.getJob(job2).getStats()).json()
-
+    
+    
     let job2 = await testQueue3.push({value: issue})
     let jobProgress = await (await testQueue3.getJob(job2).getStats()).json()
 
@@ -246,7 +243,9 @@ resolver.define("setHolidays", async (req) => {
   // return {con: req.context, pay : req.payload, req:req}
   const storageData = await storage.get(STORAGE_HOLIDAYS_KEY);
   let holidayObj = req.payload.value;
- 
+  
+  let date_ = new Date(holidayObj['date']);
+  holidayObj['date_code'] = date_.toLocaleDateString("en-US");
   await storageData.push(holidayObj);
 
   return holidayObj;
@@ -282,6 +281,21 @@ resolver.define("createConfluenceTeamTemplate", async (req) => {
   return await response.json();
   return { msg: "response" };
 });
+
+resolver.define("setOpenAi",async (req)=>{
+  await storage.setSecret(utils.STORAGE_OPENAI_KEY,req.payload.value);
+
+  return {exists: true};
+})
+
+resolver.define("checkOpenAi",async (req)=>{
+  let key = await storage.getSecret(utils.STORAGE_OPENAI_KEY);
+  if(key){
+    return {exists: true}
+  }
+  return {exists : false}
+})
+
 
 
 

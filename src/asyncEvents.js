@@ -3,6 +3,7 @@ import Resolver from "@forge/resolver";
 import { storage } from "@forge/api";
 import Utils from './utils';
 import { encode } from 'gpt-tokenizer'
+import OpenAiUtil from "./openAiUtil";
 
 export const testQueue1 = new Queue({ key: 'aiJobQueueJob1' });
 export const testQueue2 = new Queue({ key: 'aiJobQueueJob2' });
@@ -30,6 +31,14 @@ asyncResolver.define("job-event-listener1", async (queueItem) => {
       ai_response = `START\n this is tokenized text > \n${confluencePageBody['raw']} \nEND`
   }else{
     // openai api get key in openai utils
+    let openai_response = await OpenAiUtil.postChatCompletion(tokenizedPrompt)
+    
+    if(openai_response.status==-1){
+      console.log(`error openAI ${openai_response.message}`)
+      return 0;
+    }
+    ai_response = openai_response.message;
+    console.log(`openai response >> ${ai_response}`)
   }
 
   // startend
@@ -51,7 +60,37 @@ asyncResolver.define("job-event-listener2", async (queueItem) => {
   console.log("asyncResovler working.. job2")
   let issueDetails = queueItem.payload.value;
 
-  let days = ['sun','mon','tue','wed','thr', 'fri','sat']
+  let days = {
+    "0": {
+      "day_name": "Sunday",
+      "day": "sun"
+    },
+    "1": {
+      "day_name": "Monday",
+      "day": "mon"
+    },
+    "2": {
+      "day_name": "Tuesday",
+      "day": "tue"
+    },
+    "3": {
+      "day_name": "Wednesday",
+      "day": "wed"
+    },
+    "4": {
+      "day_name": "Thursday",
+      "day": "thu"
+    },
+    "5": {
+      "day_name": "Friday",
+      "day": "fri"
+    },
+    "6": {
+      "day_name": "Saturday",
+      "day": "sat"
+    }
+  }
+  
   
   let utils = new Utils();
   // check holiday ocasional + weekly + comment
@@ -62,22 +101,25 @@ asyncResolver.define("job-event-listener2", async (queueItem) => {
   
   let todayDate = new Date(issueDetails['issue']['fields']['created']);
   let todayDateCode = todayDate.toLocaleDateString("en-US");
-  let todayDay = days[todayDate.getDay()]
+  let todayDay = days[`${todayDate.getDay()}`]['day']
 
   let commentPrompt = null;
 
   if(ocasionHoliday.length){
     for(let i = 0 ; i<ocasionHoliday.length; i++){
-      if(ocasionHoliday[i]['date']==todayDateCode){
+      if(ocasionHoliday[i]['date_code']==todayDateCode){
         // get prompt
-        
+        commentPrompt = utils.getJiraCommentPrompt(issueDetails,"ocasional")
         console.log(`today's ocasion holiday ${ocasionHoliday[i]['holiday_name']}`);
         break;
       }
     }
+    
+    
   }
   else if(settingHolidayWeekly[todayDay]){
     // weekly holiday
+    commentPrompt = utils.getJiraCommentPrompt(issueDetails,"weekly")
     console.log(`today's weekly holiday ${settingHolidayWeekly[todayDay]}`);
     // get prompt
   }
@@ -93,6 +135,14 @@ asyncResolver.define("job-event-listener2", async (queueItem) => {
     }
     else{
       // openai
+      let openai_response = await OpenAiUtil.postChatCompletion(commentPrompt)
+    
+      if(openai_response.status==-1){
+        console.log(`error openAI ${openai_response.message}`)
+        return 0;
+      }
+      ai_response = openai_response.message;
+      console.log(`openai response >> ${ai_response}`)
     }
 
     // startend regex
@@ -131,8 +181,14 @@ asyncResolver.define("job-event-listener3", async (queueItem) => {
         
       }
       else{
-        // open ai
-        // token count
+        // open ai    
+        let openai_response = await OpenAiUtil.postChatCompletion(bugPrompt)
+        if(openai_response.status==-1){
+          console.log(`error openAI ${openai_response.message}`)
+          return 0;
+        }
+        ai_response = openai_response.message;
+        console.log(`openai response >> ${ai_response}`)
       }
       
       let teamName = utils.getTextBetweenStartEnd(ai_response);
@@ -164,7 +220,6 @@ asyncResolver.define("job-event-listener3", async (queueItem) => {
   }else{
     console.log(`job3 no jiraboards added : ${jiraboards} or no issueDetails`)
   }
-
 
   return 1;
   
