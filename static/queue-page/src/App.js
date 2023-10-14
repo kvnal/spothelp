@@ -31,7 +31,7 @@ const App = () => {
 
   return (
     <div className="App">
-      {/* <Devtools /> */}
+      <Devtools />
       <Tabs onChange={handleUpdate} selected={selected}>
         <TabList>
           <Tab>Issue Locator</Tab>
