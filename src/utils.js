@@ -1,4 +1,4 @@
-import api, { route } from "@forge/api";
+import api, { route, storage } from "@forge/api";
 import { convert } from "html-to-text";
 
 
@@ -15,7 +15,16 @@ class Utils {
   STORAGE_OPENAI_KEY = "openai";
   // 
 
-  
+  deleteAllStorageKeys = async () =>{
+    let keys = [this.STORAGE_HOLIDAYS_KEY, this.STORAGE_SETTINGS_KEY, this.STORAGE_HOLIDAYS_KEY, this.STORAGE_TOKENIZED_CONFLUENCE_BODY]
+    
+    keys.forEach(async(element) => {
+        await storage.delete(element)
+    });
+
+    await storage.deleteSecret(this.STORAGE_OPENAI_KEY);
+    return {msg:"deleted all keys"}
+  }
 
   getConfluenceBody = async (id, asApp = false) => {
     // let response = await api.asUser().requestConfluence(route`/wiki/rest/api/content/${id}?expand=body.dynamic`);
@@ -155,9 +164,10 @@ class Utils {
   getJiraCommentPrompt = (event, type = "default") => {
     let detectLanguageFromText = event['issue']['fields']['summary'];
     let translate = null;
-
-    if(!detectLanguageFromText)
-        return 0;
+    
+    if(!detectLanguageFromText){
+      return 0;
+    }
     
 
     if (type == "ocasional") {

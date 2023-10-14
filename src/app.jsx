@@ -1,5 +1,7 @@
 import ForgeUI, { render, Text, ContentAction, ModalDialog, useState } from '@forge/ui';
 // confluence contextaction for template...
+
+
 const App = () => {
   const [isOpen, setOpen] = useState(true);
 
@@ -7,9 +9,12 @@ const App = () => {
     return null;
   }
 
+
   return (
+
     <ModalDialog header="Hello" onClose={() => setOpen(false)}>
-      <Text>Hello world!</Text>
+      <Text>generateTemplate</Text>
+      
     </ModalDialog>
   );
 };

@@ -47,6 +47,10 @@ asyncResolver.define("job-event-listener1", async (queueItem) => {
   
   let storageDataArrTokenize = await storage.get(utils.STORAGE_TOKENIZED_CONFLUENCE_BODY);
 
+  if(!storageDataArrTokenize){
+    storageDataArrTokenize = [];
+  }
+
   dataToset['confluence_token'] = ai_response;
   storageDataArrTokenize.push(dataToset);
   
@@ -102,10 +106,12 @@ asyncResolver.define("job-event-listener2", async (queueItem) => {
   let todayDate = new Date(issueDetails['issue']['fields']['created']);
   let todayDateCode = todayDate.toLocaleDateString("en-US");
   let todayDay = days[`${todayDate.getDay()}`]['day']
-
+  let todayDayFull = days[`${todayDate.getDay()}`]['day_name']
+  todayDay = "wed"
+  
   let commentPrompt = null;
-
-  if(ocasionHoliday.length){
+  
+  if(ocasionHoliday.length && !commentPrompt){
     for(let i = 0 ; i<ocasionHoliday.length; i++){
       if(ocasionHoliday[i]['date_code']==todayDateCode){
         // get prompt
@@ -114,22 +120,22 @@ asyncResolver.define("job-event-listener2", async (queueItem) => {
         break;
       }
     }
-    
-    
   }
-  else if(settingHolidayWeekly[todayDay]){
+  
+  if(!commentPrompt && settingHolidayWeekly[todayDay]){
     // weekly holiday
     commentPrompt = utils.getJiraCommentPrompt(issueDetails,"weekly")
-    console.log(`today's weekly holiday ${settingHolidayWeekly[todayDay]}`);
+    console.log(`today's weekly holiday ${todayDay}`);
     // get prompt
   }
-  else{
+
+  if(!commentPrompt){
     commentPrompt=utils.getJiraCommentPrompt(issueDetails);
   }
 
+  
   let ai_response = null;
   if(commentPrompt){
-    console.log(`commentPrompt > ${commentPrompt}`);
     if(utils.USE_MOCK_AI){
       ai_response = "asdf START\nthis is ai generated text response by chatGPT. regex \nEND"
     }
@@ -148,9 +154,10 @@ asyncResolver.define("job-event-listener2", async (queueItem) => {
     // startend regex
     ai_response = utils.getTextBetweenStartEnd(ai_response);
     let commentResponse = await utils.createIssueComment(issueDetails['issue']['key'],ai_response)
-    
+    console.log(`comment created ${commentResponse}`);
     return 1;
   }
+  console.log("no comment created on issue")
   return 0;
   
 });
@@ -204,6 +211,7 @@ asyncResolver.define("job-event-listener3", async (queueItem) => {
 
             if(jiraLink && "msg" in jiraLink && jiraLink['msg']=="linked"){
                 console.log(`issueLinked ${issueDetails['issue']['key']} ${newJiraIssue['key']}`)
+                console.log(`bug prompt > ${bugPrompt}`)
                 
                 return 1;
             }else{
