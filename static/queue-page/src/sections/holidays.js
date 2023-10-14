@@ -68,8 +68,8 @@ const mapWeeklyHolidayDataToTable = (settings, setSettings) => {
 const mapHolidaysToTable = (holidays) => {
   if (!holidays || ensureArray(holidays).length === 0) return;
   return ensureArray(holidays).map((holiday) => ({
-    holiday_name: capitaliseFirstLetterCase(holiday.holiday_name),
-    date: moment(holiday.date).format("dddd, MMMM Do YYYY"),
+    holiday_name: capitaliseFirstLetterCase(holiday?.holiday_name),
+    date: moment(holiday?.date).format("dddd, MMMM Do YYYY"),
   }));
 };
 

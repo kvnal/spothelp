@@ -8,5 +8,6 @@ export const capitaliseFirstLetterCase = (words) => {
 };
 
 export const ensureArray = (arr) => {
+  if(!arr) return [];
   return Array.isArray(arr) ? arr : [arr];
 };

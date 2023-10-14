@@ -161,7 +161,9 @@ resolver.define("getSettings", async (req) => {
 
 resolver.define("setAiIssueLocator", async (req) => {
   let dataToset = req.payload.value;
-  const storageDataArr = ensureArray(await storage.get(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY));
+  const storageDataArr = ensureArray(
+    await storage.get(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY)
+  );
   storageDataArr.push(dataToset);
   await storage.set(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY, storageDataArr);
   await testQueue1.push({ value: dataToset });
@@ -178,6 +180,11 @@ resolver.define("getAiIssueLocator", async (req) => {
   return storageData;
 });
 
+resolver.define("deleteAiIssueLocator", async () => {
+  await storage.delete(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY);
+  return true;
+});
+
 resolver.define("getHolidays", async (req) => {
   const storageData = await storage.get(STORAGE_HOLIDAYS_KEY);
   if (storageData === undefined) {
@@ -192,8 +199,8 @@ resolver.define("setHolidays", async (req) => {
   const storageData = ensureArray(await storage.get(STORAGE_HOLIDAYS_KEY));
   let holidayObj = req.payload.value;
 
-  let date_ = new Date(holidayObj['date']);
-  holidayObj['date_code'] = date_.toLocaleDateString("en-US");
+  let date_ = new Date(holidayObj["date"]);
+  holidayObj["date_code"] = date_.toLocaleDateString("en-US");
   await storageData.push(holidayObj);
   await storage.set(STORAGE_HOLIDAYS_KEY, storageData);
   return holidayObj;
@@ -203,8 +210,6 @@ resolver.define("deleteHolidays", async () => {
   await storage.delete(STORAGE_HOLIDAYS_KEY);
   return true;
 });
-
-
 
 resolver.define("getUsers", async (req) => {
   let users = await utils.getUsers();

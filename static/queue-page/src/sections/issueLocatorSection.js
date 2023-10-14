@@ -4,7 +4,7 @@ import InputLabelWrapper from "../components/inputLabel";
 import SectionTitle from "../components/section-title";
 import Toggle from "@atlaskit/toggle";
 import ButtonGroup from "@atlaskit/button/button-group";
-import Button from "@atlaskit/button/standard-button";
+import { LoadingButton } from "@atlaskit/button";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import Table from "../components/table";
@@ -14,22 +14,35 @@ import IssueModal from "../components/modals/issue-modal";
 import { ensureArray } from "../helpers";
 
 const maptoIssuesTable = (data) => {
-  if(!data || ensureArray(data).length === 0) return;
+  if (!data || ensureArray(data).length === 0) return;
   return ensureArray(data)?.map((item) => ({
     teamName: capitaliseFirstLetterCase(item.team_name),
     assigneeName: item.assignee.displayName,
-    jiraProject: item.jira.location.projectKey,
+    jiraProject: item.jira.name,
     conflenceTitle: item.confluence.title,
   }));
 };
 
 const IssueActionsContent = (props) => {
-  const { handleOpen } = props;
+  const { handleOpen, refreshLocator } = props;
+
+  const [isDeleting, setIsDeleting] = useState(false);
+  const deleteAllIssues = () => {
+    setIsDeleting(true);
+    invoke("deleteAiIssueLocator").then(() => {
+      setIsDeleting(false);
+      refreshLocator();
+    });
+  };
+
   return (
     <ButtonGroup>
-      <Button appearance="primary" onClick={handleOpen}>
+      <LoadingButton appearance="primary" onClick={handleOpen}>
         Link Jira Project
-      </Button>
+      </LoadingButton>
+      <LoadingButton onClick={deleteAllIssues} isLoading={isDeleting}>
+        Remove all linked boards
+      </LoadingButton>
     </ButtonGroup>
   );
 };
@@ -44,11 +57,18 @@ const IssueLocatorSection = (props) => {
 
   useEffect(() => {
     invoke("getAiIssueLocator").then((data) => {
-      console.log(JSON.stringify(data, null, 2));
       setLocatorData(maptoIssuesTable(data));
       setLocatorLoading(false);
     });
   }, []);
+
+  const refreshLocator = () => {
+    setLocatorLoading(true);
+    invoke("getAiIssueLocator").then((data) => {
+      setLocatorData(maptoIssuesTable(data));
+      setLocatorLoading(false);
+    });
+  };
 
   const locatorDataColumns = [
     {
@@ -99,7 +119,12 @@ const IssueLocatorSection = (props) => {
       <SectionTitle
         title={"Issue Locator"}
         subTitle={`Configure your teams here, for our A.I. to forward customer issues automatically.`}
-        buttonComponent={<IssueActionsContent handleOpen={handleOpen} />}
+        buttonComponent={
+          <IssueActionsContent
+            handleOpen={handleOpen}
+            refreshLocator={refreshLocator}
+          />
+        }
       />
       <div className="d-flex mb-4" style={{ width: "100%" }}>
         <Table
@@ -112,7 +137,10 @@ const IssueLocatorSection = (props) => {
       <ModalTransition>
         {isOpen && (
           <Modal onClose={handleClose}>
-            <IssueModal closeModal={handleClose} />
+            <IssueModal
+              handleClose={handleClose}
+              refreshLocator={refreshLocator}
+            />
           </Modal>
         )}
       </ModalTransition>

@@ -28,9 +28,10 @@ const HolidayModal = (props) => {
         }
         setFailed(false);
         setLoading(true);
+        const dateInSystem = new Date(new Date(value["date"]).getTime() - (new Date()).getTimezoneOffset()*60*1000);
         const holiday = {
           holiday_name: value["holidayName"].trim(),
-          date: new Date(value["date"]).getTime(),
+          date: dateInSystem,
         };
         invoke("setHolidays", {value: holiday})
           .then((data) => {
@@ -48,11 +49,10 @@ const HolidayModal = (props) => {
       {({ formProps }) => (
         <form id="form-with-id" {...formProps}>
           <ModalHeader>
-            <ModalTitle>Modal dialog with form</ModalTitle>
+            <ModalTitle>Add Holiday</ModalTitle>
           </ModalHeader>
 
           <ModalBody>
-            <p>Enter some text then submit the form to see the response.</p>
             <Field label="Holiday Name" name="holidayName" defaultValue="">
               {({ fieldProps }) => (
                 <Textfield
