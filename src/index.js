@@ -58,8 +58,7 @@ export async function run(event, context) {
       console.log(`JSM request type : ok`)
 
       let job2 = await testQueue2.push({ value: event });
-      // let job3 = await testQueue3.push({ value: event });
-      // check holiday weekly from setting
+      let job3 = await testQueue3.push({ value: event });
 
     }else{
       console.log(`JSM request type not in ${processOnlyRequestType}`)
