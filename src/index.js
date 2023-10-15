@@ -42,6 +42,12 @@ export async function run(event, context) {
     
     console.log("service_desk issue...");
     
+    let openAikey = await storage.getSecret(utils.STORAGE_OPENAI_KEY);
+    if(!openAikey && !utils.USE_MOCK_AI){
+      console.log(`openAi key not found.`)
+      return;
+    }
+    
     let processOnlyRequestType = ["Report a bug","Technical support"]
   
     let jiraIssue = await utils.getJiraIssue(event['issue']['key']);
