@@ -37,3 +37,33 @@
   font-size: 0.7em;
   color: #9c9c9c;
 }
+
+.cover-container { 
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cover-card {
+  width: 70%;
+}
+
+.cover-title {
+  font-size: 2.2em;
+  color: #000;
+}
+
+.get-key-title {
+  font-size: 1.4em;
+  color: #000;
+}
+
+.cover-subtitle {
+  font-size: 1.4em;
+}
+
+.cover-spinner {
+  margin-top: 10em;
+}
