@@ -15,16 +15,16 @@ class Utils {
   STORAGE_OPENAI_KEY = "openai";
   // 
 
-  deleteAllStorageKeys = async () =>{
-    let keys = [this.STORAGE_HOLIDAYS_KEY, this.STORAGE_SETTINGS_KEY, this.STORAGE_HOLIDAYS_KEY, this.STORAGE_TOKENIZED_CONFLUENCE_BODY]
-    
-    keys.forEach(async(element) => {
-        await storage.delete(element)
+  deleteAllStorageKeys = async () => {
+    let keys = [this.STORAGE_HOLIDAYS_KEY, this.STORAGE_SETTINGS_KEY, this.STORAGE_HOLIDAYS_KEY, this.STORAGE_TOKENIZED_CONFLUENCE_BODY];
+
+    keys.forEach(async (element) => {
+      await storage.delete(element);
     });
 
     await storage.deleteSecret(this.STORAGE_OPENAI_KEY);
-    return {msg:"deleted all keys"}
-  }
+    return { msg: "deleted all keys" };
+  };
 
   getConfluenceBody = async (id, asApp = false) => {
     // let response = await api.asUser().requestConfluence(route`/wiki/rest/api/content/${id}?expand=body.dynamic`);
@@ -65,7 +65,7 @@ class Utils {
       body: JSON.stringify(newJiraIssue)
     });
 
-    
+
     let newlyCreatedJiraIssue = await response.json();
     return newlyCreatedJiraIssue;
   };
@@ -114,18 +114,30 @@ class Utils {
     }
   };
 
-  getJiraIssueBodyDescription = async (key) =>{
+  getJiraIssueBodyDescription = async (key) => {
     // ?expand=renderedFields
     let response = await api.asApp().requestJira(
       route`/rest/api/3/issue/${key}?expand=renderedFields`
     );
     if (response.statusText = "OK") {
       response = await response.json();
-      let plaintext = convert(response['renderedFields']['description'])
+      let plaintext = convert(response['renderedFields']['description']);
       return plaintext;
     }
     return 0;
-  }
+  };
+
+  getJiraIssue = async (key) => {
+    // ?expand=renderedFields
+    let response = await api.asApp().requestJira(
+      route`/rest/api/3/issue/${key}`
+    );
+    if (response.statusText = "OK") {
+      response = await response.json();
+      return response;
+    }
+    return 0;
+  };
 
   getLlamaTokenizePrompt = (confluenceRawBody) => {
     let prompt = `Tokenize the given team description in a way such that their would be sufficient info about the team. so that you would be able to recognize the given the bugs belong to this team. exclude any unnecessary text in the response. start and end tokenized text with text "START" and "END" \n\n ${confluenceRawBody}`;
@@ -138,47 +150,46 @@ class Utils {
     return new Promise(resolve => setTimeout(resolve, delayInms));
   };
 
-  getBugTeamPrompt = (issueSummaryDescObj,tokenized_storage_data) => {
+  getBugTeamPrompt = (issueSummaryDescObj, tokenized_storage_data) => {
     let prompt = null;
 
-    if(tokenized_storage_data){
+    if (tokenized_storage_data) {
       let teamCount = tokenized_storage_data.length;
 
       let heading = `there is an organization with ${teamCount} below listed team in technical side.`;
-      
+
       let bugText = `now suppose their is a bug with given description: "Title: ${issueSummaryDescObj
       ['summary']}. Description: ${issueSummaryDescObj['description']}" \nNow guess which team from the above organization should take the responsibility of this bug. answer without explanation. start and ends team name with text "START" and "END".`;
-        
+
       let teamDescriptionText = "";
-      for(let i = 0; i<tokenized_storage_data.length; i++){
-        teamDescriptionText += `${i+1}. ${tokenized_storage_data[i]['team_name']}: ${tokenized_storage_data[i]['confluence_token']}\n`
+      for (let i = 0; i < tokenized_storage_data.length; i++) {
+        teamDescriptionText += `${i + 1}. ${tokenized_storage_data[i]['team_name']}: ${tokenized_storage_data[i]['confluence_token']}\n`;
       }
 
 
       prompt = `${heading}\n${teamDescriptionText}\n${bugText}`;
       return prompt;
     }
-    return prompt
+    return prompt;
   };
 
-  getJiraCommentPrompt = (event, type = "default") => {
+  getJiraCommentPrompt = (event, holidayName = null, type = "default") => {
     let detectLanguageFromText = event['issue']['fields']['summary'];
     let translate = null;
-    
-    if(!detectLanguageFromText){
+    let holidayText = "";
+
+    if (!detectLanguageFromText) {
       return 0;
     }
-    
 
-    if (type == "ocasional") {
-      translate = "<ocasional prompt>"
+    if (type == "ocasional" || type =="weekly") {
+      holidayText = `Respond over chat to our customer notifying them   about the team's unavailability due to ${holidayName} holiday, `;
     }
-    else if (type == "weekly") {
-      translate = "<weekly prompt>"
-    }
-    else {
-      translate = `Detect language: '${detectLanguageFromText}'. Generate a polite response thanking the customer and assuring prompt assistance in the detected language; if not, use English. feel free to be creative but dont answer the question by yourself and remember to keep it short. start and end response with "START" and "END".`;
-    }
+
+    translate = `Detect language: '${detectLanguageFromText}'.
+${holidayText}
+Generate a polite response thanking the customer and assuring prompt assistance in the detected language; if not, use English. feel free to be creative but dont answer the question by yourself and remember to keep it short.
+start and end response with "START" and "END".`;
 
     return translate;
   };
@@ -186,21 +197,21 @@ class Utils {
 
   // START([\s\S]*)END
 
-  getTextBetweenStartEnd = (text) =>{
+  getTextBetweenStartEnd = (text) => {
     let pattern = /START([\s\S]*)END/g;
-    let plainText = text.match(pattern)
-    
-    if(plainText){
-      plainText = plainText[0]
-      plainText = plainText.replace("START","")
-      plainText = plainText.replace("END","")
+    let plainText = text.match(pattern);
+
+    if (plainText) {
+      plainText = plainText[0];
+      plainText = plainText.replace("START", "");
+      plainText = plainText.replace("END", "");
       plainText = plainText.trim();
-      
+
       return plainText;
     }
     console.log(`START END GPT issue > ${text}`);
     return text;
-  }
+  };
 
   ///////////
 

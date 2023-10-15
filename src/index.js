@@ -36,17 +36,28 @@ const DEFAULT_SETTING_CONFIG = {
 
 // event trigger
 export async function run(event, context) {
-  console.log("event : IssueCreate ");
-
-  // check issue type??
-  // check if issue is bug (get issue details?)
-
+  console.log("event : IssueCreate " );
+  
   if (event['issue']['fields']['project']['projectTypeKey'] == "service_desk") {
+    
     console.log("service_desk issue...");
+    
+    let processOnlyRequestType = ["Report a bug","Technical support"]
+  
+    let jiraIssue = await utils.getJiraIssue(event['issue']['key']);
+    let eventReqType = jiraIssue['fields']['customfield_10010']['requestType']['name']
+  
+    if(jiraIssue && eventReqType && processOnlyRequestType.includes(eventReqType)){
+      
+      console.log(`JSM request type : ok`)
 
-    let job2 = await testQueue2.push({ value: event });
-    // let job3 = await testQueue3.push({ value: event });
-    // check holiday weekly from setting
+      let job2 = await testQueue2.push({ value: event });
+      // let job3 = await testQueue3.push({ value: event });
+      // check holiday weekly from setting
+
+    }else{
+      console.log(`JSM request type not in ${processOnlyRequestType}`)
+    }
     return 1;
 
   }

@@ -24,7 +24,7 @@ asyncResolver.define("job-event-listener1", async (queueItem) => {
   let confluencePageBody = await utils.getConfluenceBody(dataToset['confluence']['id'],true);
   let tokenizedPrompt =  utils.getLlamaTokenizePrompt(confluencePageBody['raw']);
 
-  // console.log(`tokenize >> ${tokenizedPrompt}`);
+  console.log(`tokenize >> ${tokenizedPrompt}`);
 
   let ai_response = null;
   if(utils.USE_MOCK_AI){
@@ -107,7 +107,6 @@ asyncResolver.define("job-event-listener2", async (queueItem) => {
   let todayDateCode = todayDate.toLocaleDateString("en-US");
   let todayDay = days[`${todayDate.getDay()}`]['day']
   let todayDayFull = days[`${todayDate.getDay()}`]['day_name']
-  todayDay = "wed"
   
   let commentPrompt = null;
   
@@ -115,7 +114,7 @@ asyncResolver.define("job-event-listener2", async (queueItem) => {
     for(let i = 0 ; i<ocasionHoliday.length; i++){
       if(ocasionHoliday[i]['date_code']==todayDateCode){
         // get prompt
-        commentPrompt = utils.getJiraCommentPrompt(issueDetails,"ocasional")
+        commentPrompt = utils.getJiraCommentPrompt(issueDetails,ocasionHoliday[i]['holiday_name'],"ocasional")
         console.log(`today's ocasion holiday ${ocasionHoliday[i]['holiday_name']}`);
         break;
       }
@@ -124,7 +123,7 @@ asyncResolver.define("job-event-listener2", async (queueItem) => {
   
   if(!commentPrompt && settingHolidayWeekly[todayDay]){
     // weekly holiday
-    commentPrompt = utils.getJiraCommentPrompt(issueDetails,"weekly")
+    commentPrompt = utils.getJiraCommentPrompt(issueDetails,todayDayFull,"weekly")
     console.log(`today's weekly holiday ${todayDay}`);
     // get prompt
   }
@@ -133,6 +132,7 @@ asyncResolver.define("job-event-listener2", async (queueItem) => {
     commentPrompt=utils.getJiraCommentPrompt(issueDetails);
   }
 
+  console.log(`commentPrompt > ${commentPrompt}`)
   
   let ai_response = null;
   if(commentPrompt){
