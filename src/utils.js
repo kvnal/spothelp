@@ -16,7 +16,7 @@ class Utils {
   // 
 
   deleteAllStorageKeys = async () => {
-    let keys = [this.STORAGE_HOLIDAYS_KEY, this.STORAGE_SETTINGS_KEY, this.STORAGE_HOLIDAYS_KEY, this.STORAGE_TOKENIZED_CONFLUENCE_BODY];
+    let keys = [this.STORAGE_HOLIDAYS_KEY, this.STORAGE_SETTINGS_KEY, this.STORAGE_HOLIDAYS_KEY, this.STORAGE_TOKENIZED_CONFLUENCE_BODY, this.STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY];
 
     keys.forEach(async (element) => {
       await storage.delete(element);
