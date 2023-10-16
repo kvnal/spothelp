@@ -57,7 +57,7 @@ const HolidayModal = (props) => {
               {({ fieldProps }) => (
                 <Textfield
                   autoComplete="off"
-                  placeholder="Christmas"
+                  placeholder="Name of the holiday"
                   {...fieldProps}
                 />
               )}

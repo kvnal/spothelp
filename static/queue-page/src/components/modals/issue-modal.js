@@ -24,7 +24,8 @@ const IssueModal = (props) => {
       )?.[0]?.values?.filter((value) =>
         value?.name?.toLowerCase()?.includes(inputValue?.toLowerCase())
       );
-      return boards?.map((board) => ({
+      console.log(boards);
+      return boards?.filter((board)=>board?.type !== "simple")?.map((board) => ({
         label: (
           <div className="py-1">
             <div>{board?.name}</div>
@@ -127,14 +128,14 @@ const IssueModal = (props) => {
               {({ fieldProps }) => (
                 <Textfield
                   autoComplete="off"
-                  placeholder="Backend Team"
+                  placeholder="Name of the Team"
                   isRequired
                   {...fieldProps}
                 />
               )}
             </Field>
 
-            <Field label="User" name="assignee">
+            <Field label="Team Lead" name="assignee">
               {({ fieldProps }) => (
                 <AsyncSelect
                   {...fieldProps}

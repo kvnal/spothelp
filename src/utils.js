@@ -158,12 +158,12 @@ class Utils {
 
       let heading = `there is an organization with ${teamCount} below listed team in technical side.`;
 
-      let bugText = `now suppose their is a bug with given description: "Title: ${issueSummaryDescObj
-      ['summary']}. Description: ${issueSummaryDescObj['description']}" \nNow guess which team from the above organization should take the responsibility of this bug. answer without explanation. start and ends team name with text "START" and "END".`;
+      let bugText = `now suppose their is a bug with given description: \`Title: ${issueSummaryDescObj
+      ['summary']}. Description: ${issueSummaryDescObj['description']}\`\nNow guess which team from the above organization should take the responsibility of this bug. answer without explanation. start and ends team name with text "START" and "END".`;
 
       let teamDescriptionText = "";
       for (let i = 0; i < tokenized_storage_data.length; i++) {
-        teamDescriptionText += `${i + 1}. ${tokenized_storage_data[i]['team_name']}: ${tokenized_storage_data[i]['confluence_token']}\n`;
+        teamDescriptionText += `${i + 1}. \`${tokenized_storage_data[i]['team_name']}\`: ${tokenized_storage_data[i]['confluence_token']}\n`;
       }
 
 
@@ -186,7 +186,7 @@ class Utils {
       holidayText = `Respond over chat to our customer notifying them   about the team's unavailability due to ${holidayName} holiday, `;
     }
 
-    translate = `Detect language: '${detectLanguageFromText}'.
+    translate = `Detect language: \`${detectLanguageFromText}\`.
 ${holidayText}
 Generate a polite response thanking the customer and assuring prompt assistance in the detected language; if not, use English. feel free to be creative but dont answer the question by yourself and remember to keep it short.
 start and end response with "START" and "END".`;

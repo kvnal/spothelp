@@ -43,7 +43,7 @@ asyncResolver.define("job-event-listener1", async (queueItem) => {
 
   // startend
   ai_response = utils.getTextBetweenStartEnd(ai_response);
-  console.log(`job-1 : token count - ${encode(ai_response).length}`)
+  console.log(`job-1 : token count - ${encode(ai_response)?.length}`)
   
   let storageDataArrTokenize = await storage.get(utils.STORAGE_TOKENIZED_CONFLUENCE_BODY);
 
@@ -110,8 +110,8 @@ asyncResolver.define("job-event-listener2", async (queueItem) => {
   
   let commentPrompt = null;
   
-  if(ocasionHoliday.length && !commentPrompt){
-    for(let i = 0 ; i<ocasionHoliday.length; i++){
+  if(ocasionHoliday?.length && !commentPrompt){
+    for(let i = 0 ; i<ocasionHoliday?.length; i++){
       if(ocasionHoliday[i]['date_code']==todayDateCode){
         // get prompt
         commentPrompt = utils.getJiraCommentPrompt(issueDetails,ocasionHoliday[i]['holiday_name'],"ocasional")
@@ -202,12 +202,12 @@ asyncResolver.define("job-event-listener3", async (queueItem) => {
       console.log(`teamname > ${teamName}`);
       
       let teamNameData = jiraboards.filter(e=> e['team_name']==teamName);
-      if(teamNameData){
+      if(teamNameData && teamNameData?.length>0){
         let newJiraIssue = await utils.createJiraIssue(issueDetails,teamNameData[0]['jira']['location']['projectId'],teamNameData[0]['assignee']['accountId']);
 
         
         if(newJiraIssue && "key" in newJiraIssue){
-            let jiraLink = await utils.createJiraIssueLink(issueDetails['issue']['key'],newJiraIssue['key'])
+            let jiraLink = await utils.createJiraIssueLink(issueDetails['issue']['key'],newJiraIssue['key']).catch((err)=>{console.log("error : issue not linked: ", err)})
 
             if(jiraLink && "msg" in jiraLink && jiraLink['msg']=="linked"){
                 console.log(`issueLinked ${issueDetails['issue']['key']} ${newJiraIssue['key']}`)

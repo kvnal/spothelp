@@ -34,6 +34,13 @@ const DEFAULT_SETTING_CONFIG = {
 };
 
 
+function ensureArray  (arr)  {
+  if(arr === ""){
+    return [];
+  }
+  return Array.isArray(arr) ? arr : [arr];
+};
+
 // event trigger
 export async function run(event, context) {
   console.log("event : IssueCreate " );
@@ -194,6 +201,11 @@ resolver.define("getAiIssueLocator", async (req) => {
   return storageData;
 });
 
+resolver.define("deleteAiIssueLocator", async () => {
+  await storage.delete(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY);
+  return true;
+});
+
 resolver.define("setHolidays", async (req) => {
   console.log("setHolidays");
 
@@ -218,6 +230,11 @@ resolver.define("getHolidays", async (req) => {
     return [];
   }
   return storageData;
+});
+
+resolver.define("deleteHolidays", async () => {
+  await storage.delete(STORAGE_HOLIDAYS_KEY);
+  return true;
 });
 
 resolver.define("getUsers", async (req) => {
