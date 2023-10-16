@@ -34,13 +34,6 @@ const DEFAULT_SETTING_CONFIG = {
 };
 
 
-function ensureArray  (arr)  {
-  if(arr === ""){
-    return [];
-  }
-  return Array.isArray(arr) ? arr : [arr];
-};
-
 // event trigger
 export async function run(event, context) {
   console.log("event : IssueCreate " );
