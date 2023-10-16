@@ -246,8 +246,7 @@ resolver.define("createConfluenceTeamTemplate", async (req) => {
 });
 
 resolver.define("setOpenAi", async (req) => {
-  console.log("setOpenAi");
-
+  console.log(`setOpenAi ${String(req.payload.value).length}`);
   await storage.setSecret(utils.STORAGE_OPENAI_KEY, req.payload.value);
 
   return { exists: true };
