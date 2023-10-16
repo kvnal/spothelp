@@ -80,6 +80,7 @@ resolver.define("devInvoke", async (req) => {
 
   if (func == "del") {
     await storage.delete(key);
+    await storage.deleteSecret(key);
     return { msg: `deleted ${key}` };
   }
   else if (func == "get") {
