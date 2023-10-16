@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Typed from "react-typed";
-import Spinner from '@atlaskit/spinner'
 
 const subTexts = [
   "A.I that can allocate customer issues to the right teams",
