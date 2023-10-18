@@ -5,6 +5,7 @@ modules:
       title: spothelp
       resolver:
         function: resolver
+      icon: resource:icon-resource;icons/spothelp.ico
   trigger:
     - key: event-trigger
       function: trigger
@@ -40,6 +41,8 @@ resources:
     tunnel:
       port: 3000
     path: static/queue-page/build
+  - key: icon-resource
+    path: resource
 app:
   id: ari:cloud:ecosystem::app/c049be28-55ec-411a-972e-d969d2c16022
 permissions:

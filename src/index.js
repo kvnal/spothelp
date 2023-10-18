@@ -195,7 +195,7 @@ resolver.define("getAiIssueLocator", async (req) => {
 });
 
 resolver.define("deleteAiIssueLocator", async () => {
-  await storage.delete(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY);
+  await storage.set(STORAGE_AUTO_AI_ISSUE_LOCATOR_KEY,[]);
   return true;
 });
 
@@ -226,7 +226,7 @@ resolver.define("getHolidays", async (req) => {
 });
 
 resolver.define("deleteHolidays", async () => {
-  await storage.delete(STORAGE_HOLIDAYS_KEY);
+  await storage.set(STORAGE_HOLIDAYS_KEY,[]);
   return true;
 });
 

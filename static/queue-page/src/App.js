@@ -29,7 +29,6 @@ const App = () => {
 
   return (
     <div className="App">
-      <Devtools />
       {isLoading ? (
         <CoverPage />
       ) : isOpenAiKey ? (
