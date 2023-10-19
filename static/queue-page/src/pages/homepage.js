@@ -78,6 +78,17 @@ const Home = () => {
         >
           Save
         </LoadingButton>
+        <div className="px-2"></div>
+        <LoadingButton
+          isLoading={isSettingsLoading}
+          appearance={isFailed ? "danger" : "subtle"}
+          className=""
+          onClick={() => {
+            invoke("devInvoke", {key:null, func:"other" })
+          }}
+        >
+          Reset App
+        </LoadingButton>
       </div>
     </>
   );

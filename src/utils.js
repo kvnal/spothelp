@@ -4,7 +4,7 @@ import { convert } from "html-to-text";
 
 class Utils {
 
-  USE_MOCK_AI = true;
+  USE_MOCK_AI = false;
   MIMIC_TODAYS_DATE_TO = null;
 
   // storage keys
